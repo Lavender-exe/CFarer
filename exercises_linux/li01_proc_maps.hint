@@ -1,0 +1,28 @@
+=== HINT 1: Open maps ===
+FILE *f = fopen("/proc/self/maps", "r");
+
+=== HINT 2: Parse perms field ===
+char *perms = strchr(line, ' ');
+if (perms) {
+    perms++;           // skip the space
+    if (perms[2] == 'x')
+        exec_count++;
+}
+
+=== HINT 3: Find notable mappings ===
+if (strstr(line, "libc") || strstr(line, "[stack]"))
+    printf("Notable: %s", line);  // line already has \n
+
+=== HINT 4: Close ===
+fclose(f);
+
+=== KEY INSIGHT ===
+/proc/<pid>/maps - any process's map (requires ptrace permission).
+/proc/self/     - always refers to the calling process.
+Other useful /proc/self files:
+  status   - name, state, VmRSS, threads, UID
+  fd/      - symlinks to every open file descriptor
+  cmdline  - null-delimited argv
+  environ  - null-delimited environment
+  exe      - symlink to executable
+  smaps    - per-region detailed memory stats (RSS, PSS, dirty pages)

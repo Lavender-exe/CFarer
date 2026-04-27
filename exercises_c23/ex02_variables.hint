@@ -1,0 +1,14 @@
+=== HINT 1 ===
+Variable declaration syntax:   type name = value;
+Examples:
+  int x = 5;
+  double y = 3.14;
+  char c = 'Z';
+
+=== HINT 2 ===
+For decimal numbers use 'double', not 'float', to get %.2f to print correctly.
+
+=== HINT 3 (SPOILER) ===
+int    age    = 30;
+double height = 1.75;
+char   grade  = 'A';

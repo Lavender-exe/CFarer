@@ -1,0 +1,30 @@
+=== HINT 1: Server - create pipe ===
+HANDLE pipe = CreateNamedPipeA(
+    PIPE_NAME,
+    PIPE_ACCESS_DUPLEX,
+    PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
+    1, 512, 512, 0, NULL);
+
+=== HINT 2: Server - wait for client ===
+ConnectNamedPipe(pipe, NULL);
+
+=== HINT 3: Server - read/write ===
+char buf[16] = {0};
+DWORD n;
+ReadFile(pipe, buf, sizeof(buf)-1, &n, NULL);
+// buf should be "PING"
+WriteFile(pipe, "PONG", 4, &n, NULL);
+FlushFileBuffers(pipe);
+DisconnectNamedPipe(pipe);
+CloseHandle(pipe);
+
+=== HINT 4: Client ===
+WaitNamedPipeA(PIPE_NAME, NMPWAIT_WAIT_FOREVER);
+HANDLE h = CreateFileA(PIPE_NAME, GENERIC_READ|GENERIC_WRITE,
+                       0, NULL, OPEN_EXISTING, 0, NULL);
+DWORD n;
+WriteFile(h, "PING", 4, &n, NULL);
+char reply[8] = {0};
+ReadFile(h, reply, sizeof(reply)-1, &n, NULL);
+// reply should be "PONG"
+CloseHandle(h);

@@ -1,0 +1,19 @@
+=== HINT 1 ===
+A C string ends with the null character '\0'.
+Walk the pointer (or index) forward until you reach it.
+
+=== HINT 2 ===
+You can use a counter:
+  int n = 0;
+  while (s[n] != '\0') n++;
+  return n;
+
+Or pointer arithmetic:
+  const char *p = s;
+  while (*p) p++;
+  return (int)(p - s);
+
+=== HINT 3 (SPOILER) ===
+int n = 0;
+while (s[n] != '\0') n++;
+return n;

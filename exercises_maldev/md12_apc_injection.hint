@@ -1,0 +1,25 @@
+=== HINT 1: Open handle to current thread ===
+HANDLE hThread = OpenThread(THREAD_SET_CONTEXT, FALSE, GetCurrentThreadId());
+
+=== HINT 2: Queue the APC ===
+DWORD queued = QueueUserAPC((PAPCFUNC)apc_callback, hThread, 0);
+// Returns non-zero on success
+
+=== HINT 3: Alertable wait to drain the queue ===
+DWORD r = SleepEx(100, TRUE);
+// WAIT_IO_COMPLETION (0xC0) means one or more APCs were delivered
+
+=== HINT 4: Assert flag ===
+assert(g_apc_fired == 1);
+
+=== KEY INSIGHT ===
+APC callbacks only fire when the thread is in an ALERTABLE wait:
+  SleepEx(ms, TRUE), WaitForSingleObjectEx(h, ms, TRUE),
+  WaitForMultipleObjectsEx(..., TRUE), etc.
+For remote injection into another process:
+  1. Find a thread in an alertable state (threads blocked on WaitForSingleObjectEx)
+  2. OpenThread(THREAD_SET_CONTEXT, FALSE, tid)
+  3. VirtualAllocEx + WriteProcessMemory for shellcode
+  4. QueueUserAPC((PAPCFUNC)shellcode_addr, hThread, 0)
+Early-bird APC: create process suspended, queue APC to main thread BEFORE
+  ResumeThread - the APC fires before any user code runs.

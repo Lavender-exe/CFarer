@@ -1,0 +1,26 @@
+=== HINT 1: Open file ===
+HANDLE hfile = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ,
+                            NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+if (hfile == INVALID_HANDLE_VALUE) { perror("open"); return 1; }
+
+=== HINT 2: Create mapping ===
+HANDLE hmap = CreateFileMapping(hfile, NULL, PAGE_READONLY, 0, 0, NULL);
+if (!hmap) { CloseHandle(hfile); return 1; }
+
+=== HINT 3: Map view ===
+const char *view = (const char *)MapViewOfFile(hmap, FILE_MAP_READ, 0, 0, 0);
+if (!view) { CloseHandle(hmap); CloseHandle(hfile); return 1; }
+
+=== HINT 4: Use + verify ===
+assert(strncmp(view, "Hello", 5) == 0);
+printf("%s", view);
+
+=== HINT 5: Cleanup ===
+UnmapViewOfFile(view);
+CloseHandle(hmap);
+CloseHandle(hfile);
+
+=== KEY INSIGHT ===
+MapViewOfFile with size=0 maps the ENTIRE file.
+The pointer behaves exactly like a char* - no read() calls needed.
+The OS pages in content lazily from disk.

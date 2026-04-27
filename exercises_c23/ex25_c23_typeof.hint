@@ -1,0 +1,17 @@
+=== HINT 1 ===
+typeof(a) gives you the type of 'a' at compile time.
+Use it to declare a temporary variable: typeof(a) _tmp = (a);
+
+=== HINT 2 ===
+The three-step swap pattern:
+  typeof(a) _tmp = (a);
+  (a) = (b);
+  (b) = _tmp;
+
+=== HINT 3 ===
+Wrap in a block statement ({ ... }) so the tmp variable is scoped:
+  #define SWAP(a, b) do { typeof(a) _t = (a); (a) = (b); (b) = _t; } while(0)
+The do { } while(0) idiom makes the macro safe in if/else without braces.
+
+=== HINT 4 (SPOILER) ===
+#define SWAP(a, b) do { typeof(a) _t = (a); (a) = (b); (b) = _t; } while(0)

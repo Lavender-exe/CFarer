@@ -1,0 +1,19 @@
+=== HINT 1 ===
+In C23, bool/true/false are keywords - use them directly.
+If compilation fails, make sure your compiler is invoked with -std=c2x or -std=c23.
+
+=== HINT 2 ===
+Palindrome check:
+  int len = (int)strlen(s);
+  for (int i = 0; i < len / 2; i++) {
+      if (s[i] != s[len - 1 - i]) return false;
+  }
+  return true;
+
+=== HINT 3 (SPOILER) ===
+bool is_palindrome(const char *s) {
+    int len = (int)strlen(s);
+    for (int i = 0; i < len / 2; i++)
+        if (s[i] != s[len - 1 - i]) return false;
+    return true;
+}

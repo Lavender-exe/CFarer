@@ -1,0 +1,37 @@
+=== HINT 1: KSA (Key Scheduling Algorithm) ===
+unsigned j = 0;
+for (int i = 0; i < 256; i++) {
+    j = (j + ctx->S[i] + key[i % keylen]) % 256;
+    unsigned char tmp = ctx->S[i];
+    ctx->S[i] = ctx->S[j];
+    ctx->S[j] = tmp;
+}
+
+=== HINT 2: PRGA (Pseudo-Random Generation / keystream) ===
+for (size_t n = 0; n < buflen; n++) {
+    ctx->i = (ctx->i + 1) % 256;
+    ctx->j = (ctx->j + ctx->S[ctx->i]) % 256;
+    unsigned char tmp = ctx->S[ctx->i];
+    ctx->S[ctx->i] = ctx->S[ctx->j];
+    ctx->S[ctx->j] = tmp;
+    buf[n] ^= ctx->S[(ctx->S[ctx->i] + ctx->S[ctx->j]) % 256];
+}
+
+=== HINT 3: Encrypt then decrypt correctly ===
+// Encrypt a COPY of payload into ciphertext:
+memcpy(ciphertext, payload, PAYLOAD_LEN);
+rc4_init(&enc_ctx, key, KEY_LEN);
+rc4_crypt(&enc_ctx, ciphertext, PAYLOAD_LEN);
+
+// Decrypt the ciphertext into decrypted:
+memcpy(decrypted, ciphertext, PAYLOAD_LEN);
+rc4_init(&dec_ctx, key, KEY_LEN);
+rc4_crypt(&dec_ctx, decrypted, PAYLOAD_LEN);
+
+=== KEY INSIGHT ===
+RC4 is symmetric: encrypt and decrypt are identical operations.
+Weakness: keystream reuse is catastrophic - never use the same key twice.
+RC4 is broken for WEP/TLS (statistical biases in first 256 bytes).
+In implants: store the key separately from the payload; combine at runtime.
+Modern alternative: ChaCha20 (free, fast, safe, no patent issues).
+Chacha20 implementation fits in ~150 lines of C and has no weak-key attacks.

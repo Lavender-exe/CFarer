@@ -1,0 +1,14 @@
+=== HINT 1 ===
+max2: use an if/else or the ternary operator:  a > b ? a : b
+
+=== HINT 2 ===
+is_even: a number is even when n % 2 == 0
+
+=== HINT 3 ===
+celsius_to_f: the formula is  F = C * 9.0 / 5.0 + 32.0
+Use 9.0/5.0 (not 9/5) to avoid integer division.
+
+=== HINT 4 (SPOILER) ===
+int max2(int a, int b)           { return a > b ? a : b; }
+int is_even(int n)               { return n % 2 == 0; }
+double celsius_to_f(double c)    { return c * 9.0 / 5.0 + 32.0; }

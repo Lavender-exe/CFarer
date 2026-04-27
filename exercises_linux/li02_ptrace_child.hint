@@ -1,0 +1,27 @@
+=== HINT 1: fork ===
+pid_t child = fork();
+
+=== HINT 2: Child side ===
+ptrace(PTRACE_TRACEME, 0, NULL, NULL);
+raise(SIGSTOP);  // deliver SIGSTOP to self - parent's waitpid() wakes up
+
+=== HINT 3: Parent - wait for stop ===
+int status;
+waitpid(child, &status, 0);
+// WIFSTOPPED(status) && WSTOPSIG(status) == SIGSTOP
+
+=== HINT 4: Read registers ===
+struct user_regs_struct regs;
+ptrace(PTRACE_GETREGS, child, NULL, &regs);
+printf("RIP: 0x%llx  RSP: 0x%llx\n", regs.rip, regs.rsp);
+
+=== HINT 5: Continue and wait ===
+ptrace(PTRACE_CONT, child, NULL, NULL);
+waitpid(child, &status, 0);
+
+=== KEY INSIGHT ===
+ptrace is the foundation of: GDB, strace, ltrace, valgrind, QEMU user-mode.
+PTRACE_SYSCALL stops the tracee on each syscall entry AND exit (2 stops per call).
+PTRACE_SINGLESTEP executes one instruction then stops (SIGTRAP).
+/proc/<pid>/mem + PTRACE_ATTACH = read/write any address without a signal.
+Security: ptrace_scope (Yama LSM) default=1 restricts to parent→child ptrace.

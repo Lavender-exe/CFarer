@@ -1,0 +1,30 @@
+=== HINT 1 ===
+IMAGE_FIRST_SECTION(nt) returns a PIMAGE_SECTION_HEADER to the first section.
+It's defined in <winnt.h>.
+
+=== HINT 2 ===
+Iteration:
+  PIMAGE_SECTION_HEADER sec = IMAGE_FIRST_SECTION(nt);
+  for (WORD i = 0; i < num_sections; i++, sec++) { ... }
+
+=== HINT 3 ===
+Section name: sec->Name is BYTE[8], NOT null-terminated if exactly 8 chars.
+Use %.8s format or copy to a 9-byte buffer and null-terminate.
+
+=== HINT 4 ===
+Characteristics flags of interest:
+  IMAGE_SCN_MEM_EXECUTE  0x20000000
+  IMAGE_SCN_MEM_READ     0x40000000
+  IMAGE_SCN_MEM_WRITE    0x80000000
+
+=== HINT 5 (SPOILER) ===
+PIMAGE_SECTION_HEADER sec = IMAGE_FIRST_SECTION(nt);
+printf("%-8s  VA=0x%08X  RawSize=0x%08X  Chars=0x%08X\n",
+       "Name", "VirtAddr", "RawSize", "Chars");
+for (WORD i = 0; i < num_sections; i++, sec++) {
+    printf("%-8.8s  0x%08X    0x%08X     0x%08X\n",
+           sec->Name,
+           sec->VirtualAddress,
+           sec->SizeOfRawData,
+           sec->Characteristics);
+}

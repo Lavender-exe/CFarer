@@ -1,0 +1,23 @@
+=== HINT 1: Open MD4 provider ===
+BCRYPT_ALG_HANDLE hAlg = NULL;
+BCryptOpenAlgorithmProvider(&hAlg, BCRYPT_MD4_ALGORITHM, NULL, 0);
+
+=== HINT 2: Hash the UTF-16 password ===
+BCRYPT_HASH_HANDLE hHash = NULL;
+BCryptCreateHash(hAlg, &hHash, NULL, 0, NULL, 0, 0);
+BCryptHashData(hHash, (PUCHAR)pw, pw_bytes, 0);
+BCryptFinishHash(hHash, hash, sizeof(hash), 0);
+
+=== HINT 3: Print hex ===
+for (int i = 0; i < 16; i++) printf("%02x", hash[i]);
+
+=== KEY INSIGHT ===
+NTLM hash = MD4(UTF-16-LE(password)) - no salt, no iteration, trivially rainbow-tabled.
+LM hash = DES(split password into 7-char chunks, uppercase) - even weaker, disabled Win Vista+.
+Pass-the-hash with actual auth:
+  - SMB: use impacket's smbclient.py/psexec.py -hashes LM:NT target
+  - WinRM: evil-winrm with -H (NT hash)
+  - LDAP: ldap3/impacket with NTLM authentication
+Windows API PtH: mimikatz sekurlsa::pth patches LSASS credentials directly.
+Overpass-the-Hash: use NT hash to request a Kerberos TGT (kinit with hash).
+Pass-the-Ticket: export Kerberos TGT/TGS and import on another machine.

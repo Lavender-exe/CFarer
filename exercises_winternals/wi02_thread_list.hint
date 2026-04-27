@@ -1,0 +1,18 @@
+=== HINT 1 ===
+Same pattern as wi01 but use Thread32First / Thread32Next.
+
+=== HINT 2 ===
+Filter inside the loop:
+  if (te.th32OwnerProcessID != target_pid) continue;
+
+=== HINT 3 (SPOILER) ===
+if (Thread32First(snap, &te)) {
+    do {
+        if (te.th32OwnerProcessID == target_pid) {
+            printf("%-10lu %-12ld %lu\n",
+                   te.th32ThreadID,
+                   te.tpBasePri,
+                   te.th32OwnerProcessID);
+        }
+    } while (Thread32Next(snap, &te));
+}

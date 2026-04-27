@@ -1,0 +1,27 @@
+=== HINT 1: Create heap ===
+HANDLE heap = HeapCreate(HEAP_NO_SERIALIZE, 4096, 1024*1024);
+
+=== HINT 2: Allocate ===
+int *a = (int *)HeapAlloc(heap, HEAP_ZERO_MEMORY, sizeof(int));
+int *b = (int *)HeapAlloc(heap, HEAP_ZERO_MEMORY, sizeof(int));
+int *c = (int *)HeapAlloc(heap, HEAP_ZERO_MEMORY, sizeof(int));
+
+=== HINT 3: Free + realloc ===
+HeapFree(heap, 0, b);
+int *big = (int *)HeapReAlloc(heap, HEAP_ZERO_MEMORY, a, sizeof(int) * 4);
+big[1] = 99;
+assert(big[1] == 99);
+
+=== HINT 4: Walk ===
+PROCESS_HEAP_ENTRY e = {0};
+while (HeapWalk(heap, &e)) {
+    if (e.wFlags & PROCESS_HEAP_ENTRY_BUSY) alloc_count++;
+}
+
+=== HINT 5: Destroy ===
+HeapDestroy(heap);   // invalidates all pointers into this heap
+
+=== KEY INSIGHT ===
+HeapDestroy is O(1) regardless of how many allocations exist.
+Ideal for parse-once arenas: allocate freely, destroy in one shot.
+HEAP_NO_SERIALIZE skips thread-safety locking - only safe for single-threaded use.

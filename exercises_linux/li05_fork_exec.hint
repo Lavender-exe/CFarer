@@ -1,0 +1,26 @@
+=== HINT 1: fork ===
+pid_t child = fork();
+// child == 0 in child process, >0 (child PID) in parent, -1 on error
+
+=== HINT 2: execvp in child ===
+char *args[] = { "ls", "-la", "/tmp", NULL };
+execvp(args[0], args);
+perror("execvp");  // only reached if exec fails
+_exit(127);
+
+=== HINT 3: waitpid in parent ===
+int status;
+waitpid(child, &status, 0);
+
+=== HINT 4: Check exit status ===
+if (WIFEXITED(status))
+    printf("exited: %d\n", WEXITSTATUS(status));
+else if (WIFSIGNALED(status))
+    printf("signal: %d\n", WTERMSIG(status));
+
+=== KEY INSIGHT ===
+fork() is copy-on-write - the child shares all pages until one side writes.
+execve() replaces the process image: code, data, stack, heap all replaced.
+Only file descriptors (unless O_CLOEXEC), signal handlers, and credentials survive exec.
+posix_spawn() is a combined fork+exec for performance (avoids forking large processes).
+vfork() is an older optimization: child borrows parent's stack, must exec or _exit immediately.

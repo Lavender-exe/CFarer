@@ -1,0 +1,19 @@
+=== HINT 1: XOR encode ===
+for (size_t i = 0; i < PAYLOAD_LEN; i++)
+    encoded[i] = payload[i] ^ key[i % KEY_LEN];
+
+=== HINT 2: XOR decode (identical operation - XOR is self-inverse) ===
+for (size_t i = 0; i < PAYLOAD_LEN; i++)
+    decoded[i] = encoded[i] ^ key[i % KEY_LEN];
+
+=== HINT 3: Assert round-trip ===
+assert(memcmp(decoded, payload, PAYLOAD_LEN) == 0);
+
+=== KEY INSIGHT ===
+XOR is symmetric: encrypt and decrypt are the same operation.
+Single-byte key is weak (only 256 keys, trivially brute-forced).
+Multi-byte rolling key (as here) is better but still linear - RC4, ChaCha20
+are stream ciphers that solve the same problem with cryptographic strength.
+In implants: store the encoded payload as a global byte array, then decode
+into a VirtualAlloc(RWX) buffer just before execution.  The encoded bytes
+look like garbage to static scanners that don't emulate the decode loop.

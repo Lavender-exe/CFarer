@@ -1,0 +1,24 @@
+=== HINT 1: Install SA_SIGINFO handler ===
+struct sigaction sa;
+memset(&sa, 0, sizeof(sa));
+sa.sa_sigaction = fpe_handler;
+sa.sa_flags     = SA_SIGINFO;
+sigaction(SIGFPE, &sa, NULL);
+
+=== HINT 2: Trigger divide-by-zero ===
+volatile int divisor = 0;
+volatile int result  = 1 / divisor;
+
+=== HINT 3: Inside handler - advance RIP ===
+ucontext_t *uc = (ucontext_t *)uc_void;
+// Skip the 2-byte idiv instruction (opcode F7 /7 or similar)
+uc->uc_mcontext.gregs[REG_RIP] += 2;
+
+=== KEY INSIGHT ===
+SA_SIGINFO gives full context: siginfo_t tells you the faulting address (si_addr),
+the signal code (FPE_INTDIV, SEGV_MAPERR, SEGV_ACCERR, etc.), and the sender PID.
+ucontext_t lets you read and modify all CPU registers from the signal handler.
+Advancing RIP is fragile - the instruction length varies.
+libsigsegv uses a safer approach (longjmp or alternate stack recovery).
+Sanitizers (ASan, UBSan) use SIGSEGV handlers to intercept memory violations
+and print detailed reports before terminating.

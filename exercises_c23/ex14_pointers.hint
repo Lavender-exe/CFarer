@@ -1,0 +1,15 @@
+=== HINT 1 ===
+*a dereferences pointer a - it reads/writes the value AT that address.
+
+=== HINT 2 ===
+To swap two values you need a temp variable:
+  int tmp = *a;
+  *a = *b;
+  *b = tmp;
+
+=== HINT 3 (SPOILER) ===
+void swap(int *a, int *b) {
+    int tmp = *a;
+    *a = *b;
+    *b = tmp;
+}

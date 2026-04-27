@@ -1,0 +1,17 @@
+=== HINT 1 ===
+while loop syntax:
+  while (condition) {
+      // body
+  }
+
+=== HINT 2 ===
+You need to:
+  1. Check that i <= n
+  2. Add i to total
+  3. Increment i (i++ or i += 1)
+
+=== HINT 3 (SPOILER) ===
+while (i <= n) {
+    total += i;
+    i++;
+}

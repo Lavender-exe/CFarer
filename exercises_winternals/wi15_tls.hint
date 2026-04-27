@@ -1,0 +1,23 @@
+=== HINT 1: Allocate slot ===
+g_tls_slot = TlsAlloc();
+if (g_tls_slot == TLS_OUT_OF_INDEXES) { /* error */ }
+
+=== HINT 2: Set value (thread function) ===
+TlsSetValue(g_tls_slot, (void*)(uintptr_t)tid);
+
+=== HINT 3: Get value ===
+DWORD stored = (DWORD)(uintptr_t)TlsGetValue(g_tls_slot);
+assert(stored == tid);
+
+=== HINT 4: Free slot (main, after all threads finish) ===
+TlsFree(g_tls_slot);
+
+=== KEY INSIGHT ===
+TlsGetValue returns the value SET by THE CURRENT THREAD for that slot.
+Thread A's TlsSetValue does not affect Thread B's TlsGetValue - they
+each have independent storage even though they use the same slot index.
+
+Static alternative (compiler extension, not portable):
+  __declspec(thread) DWORD thread_id;   // implicit per-thread storage
+Dynamic TLS is needed when you don't know the slot at compile time
+(e.g., a DLL that must work with any calling process).

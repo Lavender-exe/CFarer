@@ -1,0 +1,28 @@
+=== HINT 1: Create + assign ===
+HANDLE job = CreateJobObjectA(NULL, NULL);
+AssignProcessToJobObject(job, GetCurrentProcess());
+
+=== HINT 2: Set active process limit ===
+JOBOBJECT_BASIC_LIMIT_INFORMATION lim = {0};
+lim.LimitFlags         = JOB_OBJECT_LIMIT_ACTIVE_PROCESS;
+lim.ActiveProcessLimit = 4;
+SetInformationJobObject(job, JobObjectBasicLimitInformation, &lim, sizeof(lim));
+
+=== HINT 3: Query accounting info ===
+JOBOBJECT_BASIC_ACCOUNTING_INFORMATION acct = {0};
+QueryInformationJobObject(job, JobObjectBasicAccountingInformation,
+                           &acct, sizeof(acct), NULL);
+printf("TotalProcesses: %lu  ActiveProcesses: %lu\n",
+       acct.TotalProcesses, acct.ActiveProcesses);
+
+=== HINT 4: IsProcessInJob ===
+BOOL in_job;
+IsProcessInJob(GetCurrentProcess(), job, &in_job);
+
+=== KEY INSIGHT ===
+Job objects are the foundation of Windows sandboxing:
+  - Windows App Container uses job objects
+  - Chrome renderer isolation uses job objects
+  - SetInformationJobObject with JobObjectExtendedLimitInformation +
+    JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE means all child processes die
+    when you close the last job handle - automatic cleanup with no zombies.

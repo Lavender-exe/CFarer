@@ -1,0 +1,31 @@
+=== HINT 1 ===
+list_push_front:
+  1. malloc a new Node
+  2. set node->value = value
+  3. set node->next  = *head   (link to current head)
+  4. set *head       = node    (new node becomes head)
+
+=== HINT 2 ===
+list_length:
+  Walk the list with a pointer: while (p != NULL) { count++; p = p->next; }
+
+=== HINT 3 ===
+list_free:
+  Save next BEFORE freeing current node:
+  while (head) { Node *tmp = head->next; free(head); head = tmp; }
+
+=== HINT 4 (SPOILER) ===
+void list_push_front(Node **head, int value) {
+    Node *n = (Node *)malloc(sizeof(Node));
+    n->value = value;
+    n->next  = *head;
+    *head    = n;
+}
+int list_length(Node *head) {
+    int n = 0;
+    while (head) { n++; head = head->next; }
+    return n;
+}
+void list_free(Node *head) {
+    while (head) { Node *tmp = head->next; free(head); head = tmp; }
+}

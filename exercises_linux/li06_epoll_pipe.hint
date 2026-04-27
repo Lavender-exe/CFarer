@@ -1,0 +1,30 @@
+=== HINT 1: epoll_create1 ===
+int epfd = epoll_create1(0);
+
+=== HINT 2: Register fd ===
+struct epoll_event ev = { .events = EPOLLIN, .data.fd = fds[0] };
+epoll_ctl(epfd, EPOLL_CTL_ADD, fds[0], &ev);
+
+=== HINT 3: Write to pipe ===
+const char *msg = "hello epoll\n";
+write(fds[1], msg, strlen(msg));
+
+=== HINT 4: Wait and read ===
+struct epoll_event events[1];
+int nready = epoll_wait(epfd, events, 1, 1000);
+if (nready > 0 && (events[0].events & EPOLLIN)) {
+    char buf[64] = {0};
+    ssize_t n = read(events[0].data.fd, buf, sizeof(buf)-1);
+    printf("read: %s", buf);
+}
+
+=== HINT 5: Close ===
+close(fds[0]); close(fds[1]); close(epfd);
+
+=== KEY INSIGHT ===
+epoll_wait is O(1) per event regardless of number of registered fds.
+select/poll must scan the entire set each call - O(n).
+EPOLLET (edge-triggered): fires once per state change, not per data available.
+ET requires non-blocking fds and reading until EAGAIN to avoid missing events.
+LT (level-triggered, default): fires as long as data is available - simpler, slightly slower.
+io_uring is the modern successor: fully async, zero-copy, less syscall overhead.

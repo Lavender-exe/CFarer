@@ -1,0 +1,27 @@
+=== HINT 1: mmap anonymous RW ===
+void *ptr = mmap(NULL, 4096,
+                 PROT_READ | PROT_WRITE,
+                 MAP_PRIVATE | MAP_ANONYMOUS,
+                 -1, 0);
+
+=== HINT 2: Copy shellcode ===
+memcpy(ptr, ret_stub, sizeof(ret_stub));
+
+=== HINT 3: mprotect to RX ===
+mprotect(ptr, 4096, PROT_READ | PROT_EXEC);
+
+=== HINT 4: Execute ===
+void (*fn)(void) = (void(*)(void))ptr;
+fn();
+printf("returned from shellcode\n");
+
+=== HINT 5: Unmap ===
+munmap(ptr, 4096);
+
+=== KEY INSIGHT ===
+W^X (write XOR execute) is enforced by NX hardware + kernel.
+Never mmap with PROT_WRITE|PROT_EXEC - that's RWX and triggers seccomp/SELinux alerts.
+Correct staging: mmap RW → write payload → mprotect RX → execute.
+On Linux, mprotect on anonymous mappings generally works without privileges.
+On hardened systems (grsecurity, SELinux deny_execmem), mprotect(PROT_EXEC) on
+anonymous mappings is blocked - use a memfd + MAP_SHARED workaround instead.

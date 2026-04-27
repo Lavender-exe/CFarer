@@ -1,0 +1,15 @@
+=== HINT 1 ===
+Replace the 0 on the right-hand side of each assignment with the correct expression.
+Example:  int sum = a + b;
+
+=== HINT 2 ===
+Integer division in C truncates toward zero.
+20 / 6  ==  3   (not 3.33...)
+20 % 6  ==  2   (the leftover after dividing)
+
+=== HINT 3 (SPOILER) ===
+int sum        = a + b;
+int difference = a - b;
+int product    = a * b;
+int quotient   = a / b;
+int remainder  = a % b;

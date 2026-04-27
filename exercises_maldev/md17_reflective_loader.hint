@@ -1,0 +1,28 @@
+=== HINT 1: Allocate new region ===
+BYTE *new_base = (BYTE*)VirtualAlloc(NULL, image_size,
+    MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+
+=== HINT 2: Copy headers ===
+memcpy(new_base, disk_img, headers_size);
+
+=== HINT 3: Map sections ===
+for (WORD i = 0; i < nt->FileHeader.NumberOfSections; i++) {
+    if (sec[i].PointerToRawData == 0) continue;
+    memcpy(new_base + sec[i].VirtualAddress,
+           disk_img + sec[i].PointerToRawData,
+           sec[i].SizeOfRawData);
+}
+
+=== HINT 4: Verify MZ magic ===
+printf("MZ check: %c%c\n", new_base[0], new_base[1]);  // should be "MZ"
+
+=== KEY INSIGHT ===
+A complete reflective loader also needs:
+  1. Base relocations: IMAGE_DIRECTORY_ENTRY_BASERELOC - patch absolute addresses
+     if loaded at a different base than preferred (delta = new_base - preferred_base)
+  2. Import resolution: walk IMAGE_IMPORT_DESCRIPTOR, call GetProcAddress for each
+     imported function, write the IAT entry
+  3. TLS callbacks: invoke IMAGE_DIRECTORY_ENTRY_TLS entries before entry point
+  4. Entry point: cast to DllMain and call (DLL_PROCESS_ATTACH)
+Popular open-source implementations: ReflectiveDLLInjection (Stephen Fewer),
+  sRDI (shellcode reflective DLL injection - converts DLL to PIC shellcode).

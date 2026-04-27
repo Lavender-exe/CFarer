@@ -1,0 +1,31 @@
+=== HINT 1: Read the PEB ===
+On x64:  PPEB peb = (PPEB)__readgsqword(0x60);
+On x86:  PPEB peb = (PPEB)__readfsdword(0x30);
+
+=== HINT 2: Navigate to the module list ===
+PLIST_ENTRY head = &peb->Ldr->InMemoryOrderModuleList;
+PLIST_ENTRY cur  = head->Flink;
+
+=== HINT 3: Get LDR_DATA_TABLE_ENTRY ===
+LDR_DATA_TABLE_ENTRY is 2 LIST_ENTRYs into the structure when using
+InMemoryOrderModuleList.  Use CONTAINING_RECORD:
+  PLDR_DATA_TABLE_ENTRY entry = CONTAINING_RECORD(
+      cur, LDR_DATA_TABLE_ENTRY, InMemoryOrderLinks);
+
+=== HINT 4: Compare names ===
+entry->BaseDllName.Buffer is a WCHAR*.
+Use _wcsicmp(entry->BaseDllName.Buffer, name_w) == 0 for case-insensitive match.
+Return (HMODULE)entry->DllBase on match.
+Stop when cur == head (full circle).
+
+=== HINT 5 (SPOILER) ===
+PPEB peb = (PPEB)__readgsqword(0x60);
+PLIST_ENTRY head = &peb->Ldr->InMemoryOrderModuleList;
+PLIST_ENTRY cur  = head->Flink;
+while (cur != head) {
+    PLDR_DATA_TABLE_ENTRY e = CONTAINING_RECORD(cur, LDR_DATA_TABLE_ENTRY, InMemoryOrderLinks);
+    if (e->BaseDllName.Buffer && _wcsicmp(e->BaseDllName.Buffer, name_w) == 0)
+        return (HMODULE)e->DllBase;
+    cur = cur->Flink;
+}
+return NULL;

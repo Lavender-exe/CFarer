@@ -1,0 +1,26 @@
+=== HINT 1 ===
+_Generic(expr, type1: val1, type2: val2, default: val3)
+The controlling expression is only type-checked, NOT evaluated at runtime.
+
+=== HINT 2 ===
+#define TYPE_NAME(x) _Generic((x),   \
+    int:    "int",                   \
+    long:   "long",                  \
+    ...                              \
+    default: "unknown")
+
+=== HINT 3 ===
+Pointer types must be listed exactly:
+  char*: "char*"
+  void*: "void*"
+Note: char* and void* are different association entries.
+
+=== HINT 4 (SPOILER) ===
+#define TYPE_NAME(x) _Generic((x),  \
+    int:    "int",                  \
+    long:   "long",                 \
+    float:  "float",                \
+    double: "double",               \
+    char*:  "char*",                \
+    void*:  "void*",                \
+    default: "unknown")

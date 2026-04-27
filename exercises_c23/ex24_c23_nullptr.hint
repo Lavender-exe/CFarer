@@ -1,0 +1,14 @@
+=== HINT 1 ===
+nullptr is a new keyword in C23.
+Replace every NULL and 0 used as a pointer value with nullptr.
+
+=== HINT 2 ===
+There are three places to fix:
+  1. n->next = nullptr;
+  2. Node *head = nullptr;
+  3. head = nullptr;
+
+=== HINT 3 (SPOILER) ===
+Line "n->next  = NULL;"   → n->next  = nullptr;
+Line "Node *head = NULL;" → Node *head = nullptr;
+Line "head = 0;"          → head = nullptr;

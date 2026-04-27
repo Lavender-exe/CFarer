@@ -1,0 +1,29 @@
+=== HINT 1: safe_divide ===
+__try {
+    result = a / b;
+}
+__except(GetExceptionCode() == EXCEPTION_INT_DIVIDE_BY_ZERO
+         ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH) {
+    return INT_MIN;
+}
+
+=== HINT 2: Filter values ===
+EXCEPTION_EXECUTE_HANDLER   (1)  - execute the __except block (catch)
+EXCEPTION_CONTINUE_SEARCH   (0)  - don't handle here, unwind further
+EXCEPTION_CONTINUE_EXECUTION(-1) - resume at faulting instruction (rare/dangerous)
+
+=== HINT 3: __finally ===
+__try {
+    // code that might fail
+}
+__finally {
+    cleaned_up = 1;   // ALWAYS runs, even if exception propagates
+}
+Note: __finally and __except cannot both appear in the same __try block directly.
+Nest them: outer __try/__finally, inner __try/__except.
+
+=== HINT 4: Common exception codes ===
+EXCEPTION_ACCESS_VIOLATION        0xC0000005
+EXCEPTION_INT_DIVIDE_BY_ZERO      0xC0000094
+EXCEPTION_STACK_OVERFLOW           0xC00000FD
+EXCEPTION_BREAKPOINT               0x80000003

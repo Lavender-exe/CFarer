@@ -1,0 +1,21 @@
+=== HINT 1 ===
+stdarg.h pattern:
+  va_list ap;
+  va_start(ap, last_named_param);   // initialize
+  int val = va_arg(ap, int);        // read one argument
+  va_end(ap);                       // cleanup
+
+=== HINT 2 ===
+Call va_start with the last named parameter (here: 'count').
+Loop 'count' times, calling va_arg each iteration.
+
+=== HINT 3 (SPOILER) ===
+int sum_ints(int count, ...) {
+    int total = 0;
+    va_list ap;
+    va_start(ap, count);
+    for (int i = 0; i < count; i++)
+        total += va_arg(ap, int);
+    va_end(ap);
+    return total;
+}

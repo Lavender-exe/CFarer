@@ -1,0 +1,15 @@
+=== HINT 1 ===
+This exercise has no broken code - just read and understand it, then
+remove "// I AM NOT DONE" to advance.
+
+=== KEY CONCEPTS ===
+_BitInt(N) - exactly N bits, signed.
+unsigned _BitInt(N) - exactly N bits, unsigned.
+
+Overflow behavior (same as standard integers):
+  signed:   wraps in two's complement
+  unsigned: wraps modulo 2^N
+
+=== NOTE ===
+_BitInt is supported in GCC 13+ and Clang 14+ with -std=c2x or -std=c23.
+If compilation fails, your compiler may be too old - try upgrading.

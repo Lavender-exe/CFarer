@@ -1,0 +1,29 @@
+=== HINT 1 ===
+Plain memset(ptr, 0, len) can be optimized away by the compiler if it
+determines the memory is never read afterward.
+Use a volatile pointer to prevent that:
+  volatile unsigned char *p = (volatile unsigned char *)ptr;
+
+=== HINT 2 ===
+secure_zero loop:
+  volatile unsigned char *p = (volatile unsigned char *)ptr;
+  while (len--) *p++ = 0;
+
+=== HINT 3 ===
+secure_free steps:
+  1. secure_zero(*ptr, len)
+  2. free(*ptr)
+  3. *ptr = nullptr
+
+=== HINT 4 (SPOILER) ===
+void secure_zero(void *ptr, size_t len) {
+    volatile unsigned char *p = (volatile unsigned char *)ptr;
+    while (len--) *p++ = 0;
+}
+
+void secure_free(void **ptr, size_t len) {
+    if (!ptr || !*ptr) return;
+    secure_zero(*ptr, len);
+    free(*ptr);
+    *ptr = nullptr;
+}

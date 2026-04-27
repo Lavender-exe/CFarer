@@ -1,0 +1,35 @@
+=== HINT 1: Resolve functions ===
+NtQSI = (PFN_NtQuerySystemInformation)GetProcAddress(ntdll, "NtQuerySystemInformation");
+NtAVM = (PFN_NtAllocateVirtualMemory) GetProcAddress(ntdll, "NtAllocateVirtualMemory");
+
+=== HINT 2: SYSTEM_TIMEOFDAY_INFORMATION ===
+typedef struct {
+    LARGE_INTEGER BootTime;
+    LARGE_INTEGER CurrentTime;
+    LARGE_INTEGER TimeZoneBias;
+    ULONG         TimeZoneId;
+    ULONG         Reserved;
+    ULONGLONG     BootTimeBias;
+    ULONGLONG     SleepTimeBias;
+} SYSTEM_TIMEOFDAY_INFORMATION;
+
+SYSTEM_TIMEOFDAY_INFORMATION tod = {0};
+ULONG ret_len;
+NTSTATUS s = NtQSI((SYSTEM_INFORMATION_CLASS)3, &tod, sizeof(tod), &ret_len);
+if (NT_SUCCESS(s)) printf("BootTime: %lld\n", tod.BootTime.QuadPart);
+
+=== HINT 3: NtAllocateVirtualMemory ===
+PVOID  base = NULL;
+SIZE_T size = 4096;
+NTSTATUS s = NtAVM(
+    GetCurrentProcess(),   // ProcessHandle
+    &base,                 // *BaseAddress (in/out)
+    0,                     // ZeroBits
+    &size,                 // *RegionSize (in/out)
+    MEM_COMMIT | MEM_RESERVE,
+    PAGE_READWRITE);
+if (NT_SUCCESS(s) && base) {
+    *(int*)base = 0xDEAD;
+    printf("NtAVM page: %p  value: 0x%X\n", base, *(int*)base);
+    VirtualFree(base, 0, MEM_RELEASE);
+}

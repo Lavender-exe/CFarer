@@ -1,0 +1,9 @@
+=== HINT 1 ===
+printf() is declared in <stdio.h> (already included).
+It takes a format string as its first argument.
+
+=== HINT 2 ===
+A newline in C string literals is written as \n
+
+=== HINT 3 (SPOILER) ===
+printf("Hello, World!\n");

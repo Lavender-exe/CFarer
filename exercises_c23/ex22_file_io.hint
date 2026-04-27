@@ -1,0 +1,21 @@
+=== HINT 1 ===
+fprintf works like printf but takes a FILE* as first argument:
+  fprintf(fw, "%d\n", i);
+
+=== HINT 2 ===
+fscanf works like scanf but reads from a file:
+  fscanf(fr, "%d", &val);
+It returns the number of items successfully read.
+
+=== HINT 3 ===
+Write loop:
+  for (int i = 1; i <= 5; i++)
+      fprintf(fw, "%d\n", i);
+
+=== HINT 4 (SPOILER) ===
+// write section:
+for (int i = 1; i <= 5; i++)
+    fprintf(fw, "%d\n", i);
+
+// read section (inside the existing for loop):
+fscanf(fr, "%d", &val);

@@ -1,0 +1,17 @@
+=== HINT 1 ===
+Key <string.h> functions:
+  strcpy(dst, src)      copy src into dst
+  strcat(dst, src)      append src onto dst
+  strcmp(a, b)          0 if equal, <0 if a<b, >0 if a>b
+  strlen(s)             number of chars (not counting '\0')
+
+=== HINT 2 ===
+Steps:
+  1. strcpy(buf, first)   -> "Ada"
+  2. strcat(buf, " ")     -> "Ada "
+  3. strcat(buf, last)    -> "Ada Lovelace"
+
+=== HINT 3 (SPOILER) ===
+strcpy(buf, first);
+strcat(buf, " ");
+strcat(buf, last);

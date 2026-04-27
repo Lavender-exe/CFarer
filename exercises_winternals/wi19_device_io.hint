@@ -1,0 +1,28 @@
+=== HINT 1: Open volume ===
+HANDLE vol = CreateFileA("\\\\.\\C:",
+    GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
+    NULL, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, NULL);
+
+=== HINT 2: IOCTL call ===
+BOOL ok = DeviceIoControl(
+    vol,                         // device handle
+    FSCTL_GET_NTFS_VOLUME_DATA,  // control code
+    NULL, 0,                     // input buffer (none for this IOCTL)
+    &nvd, sizeof(nvd),           // output buffer
+    &returned,                   // bytes returned
+    NULL);                       // not overlapped
+
+=== HINT 3: Close ===
+CloseHandle(vol);
+
+=== KEY INSIGHT ===
+DeviceIoControl is the universal user→kernel gateway.
+The IOCTL code encodes the driver (device type), the function number,
+the required access level, and how buffers are passed (method):
+  METHOD_BUFFERED:  kernel copies input/output through a kernel buffer (safest)
+  METHOD_IN_DIRECT: input copied, output uses user MDL
+  METHOD_OUT_DIRECT: output uses user MDL
+  METHOD_NEITHER:   raw user pointers passed to driver (dangerous)
+
+To write your own kernel driver IOCTL, define a CTL_CODE:
+  #define MY_IOCTL CTL_CODE(FILE_DEVICE_UNKNOWN, 0x800, METHOD_BUFFERED, FILE_ANY_ACCESS)

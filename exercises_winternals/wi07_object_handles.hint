@@ -1,0 +1,33 @@
+=== HINT 1: Create objects ===
+HANDLE mtx = CreateMutexA(NULL, FALSE, "CFarerMutex");
+HANDLE evt = CreateEventA(NULL, TRUE, FALSE, "CFarerEvent");
+
+=== HINT 2: GetHandleInformation ===
+DWORD flags;
+GetHandleInformation(mtx, &flags);
+printf("Mutex flags: 0x%lX  (INHERIT=%d  PROTECT=%d)\n",
+       flags,
+       (flags & HANDLE_FLAG_INHERIT) != 0,
+       (flags & HANDLE_FLAG_PROTECT_FROM_CLOSE) != 0);
+
+=== HINT 3: SetHandleInformation ===
+SetHandleInformation(mtx, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
+// Verify:
+GetHandleInformation(mtx, &flags);
+assert(flags & HANDLE_FLAG_INHERIT);
+
+=== HINT 4: DuplicateHandle ===
+HANDLE evt_dup;
+DuplicateHandle(GetCurrentProcess(), evt,
+                GetCurrentProcess(), &evt_dup,
+                0, FALSE, DUPLICATE_SAME_ACCESS);
+
+=== HINT 5: Signal + wait ===
+SetEvent(evt);
+DWORD wr = WaitForSingleObject(evt_dup, 100);
+assert(wr == WAIT_OBJECT_0);   // same underlying object
+
+=== HINT 6: Cleanup ===
+CloseHandle(evt_dup);
+CloseHandle(evt);
+CloseHandle(mtx);

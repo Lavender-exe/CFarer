@@ -1,0 +1,23 @@
+=== HINT 1: Writer ===
+AcquireSRWLockExclusive(&g_lock);
+g_counter++;
+WakeAllConditionVariable(&g_cv);
+ReleaseSRWLockExclusive(&g_lock);
+
+=== HINT 2: Reader ===
+AcquireSRWLockShared(&g_lock);
+long val = g_counter;
+ReleaseSRWLockShared(&g_lock);
+if (val != last) { printf("counter = %ld\n", val); last = val; }
+
+=== HINT 3: SleepConditionVariableSRW (optional improvement) ===
+Instead of spinning in the reader loop, sleep on the condition variable:
+  AcquireSRWLockShared(&g_lock);
+  SleepConditionVariableSRW(&g_cv, &g_lock, 100, CONDITION_VARIABLE_LOCKMODE_SHARED);
+  // re-check condition after wake
+  ReleaseSRWLockShared(&g_lock);
+
+=== KEY INSIGHT ===
+Multiple readers can hold the lock simultaneously (shared).
+A writer waits until ALL readers release before it acquires exclusive.
+This gives much better read throughput than a plain mutex for read-heavy workloads.

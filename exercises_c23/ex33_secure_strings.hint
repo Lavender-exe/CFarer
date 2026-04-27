@@ -1,0 +1,27 @@
+=== HINT 1: strcpy fix ===
+strncpy copies at most n chars but does NOT guarantee null termination.
+Always add it manually:
+  strncpy(dst, src, sizeof(dst) - 1);
+  dst[sizeof(dst) - 1] = '\0';
+
+=== HINT 2: strcat fix ===
+strncat appends at most n chars (it DOES null-terminate):
+  strncat(dst, src, sizeof(dst) - strlen(dst) - 1);
+The -1 leaves room for the null terminator.
+
+=== HINT 3: sprintf fix ===
+snprintf writes at most n bytes including the null terminator:
+  snprintf(result, sizeof(result), "Value = %d and ...", value);
+Excess characters are silently truncated - the buffer stays safe.
+
+=== HINT 4 (SPOILER) ===
+// strcpy fix:
+strncpy(dst, long_src, BUFSIZE - 1);
+dst[BUFSIZE - 1] = '\0';
+
+// strcat fix:
+strncat(greeting, ", World! Extra overflow text here.",
+        BUFSIZE - strlen(greeting) - 1);
+
+// sprintf fix:
+snprintf(result, BUFSIZE, "Value = %d and some extra padding text!!!", value);

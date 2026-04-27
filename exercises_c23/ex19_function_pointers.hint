@@ -1,0 +1,19 @@
+=== HINT 1 ===
+Function pointer declaration:
+  int (*fn)(int)   - pointer to a function taking int, returning int
+Call it like a normal function:  fn(value)
+
+=== HINT 2 ===
+Steps inside apply():
+  1. malloc a new int array of length len
+  2. for each i, set result[i] = fn(arr[i])
+  3. return result
+
+=== HINT 3 (SPOILER) ===
+int *apply(const int *arr, int len, int (*fn)(int)) {
+    int *result = (int *)malloc((size_t)len * sizeof(int));
+    if (!result) return NULL;
+    for (int i = 0; i < len; i++)
+        result[i] = fn(arr[i]);
+    return result;
+}

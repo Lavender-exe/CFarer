@@ -1,0 +1,14 @@
+=== HINT 1 ===
+Use a for loop that runs 'len' times.
+Each iteration: read *p to get the current value, then p++ to advance.
+
+=== HINT 2 ===
+for (int i = 0; i < len; i++) {
+    total += *p;
+    p++;
+}
+
+=== HINT 3 (SPOILER) ===
+for (int i = 0; i < len; i++, p++)
+    total += *p;
+return total;

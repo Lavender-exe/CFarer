@@ -1,0 +1,23 @@
+=== HINT 1 ===
+typedef struct syntax (two common forms):
+
+Form A (separate):
+  struct Vec2 { double x; double y; };
+  typedef struct Vec2 Vec2;
+
+Form B (combined):
+  typedef struct { double x; double y; } Vec2;
+
+=== HINT 2 ===
+vec2_add: return a new Vec2 where x = a.x+b.x, y = a.y+b.y
+vec2_scale: return a new Vec2 where x = v.x*s, y = v.y*s
+
+=== HINT 3 (SPOILER) ===
+typedef struct { double x; double y; } Vec2;
+
+Vec2 vec2_add(Vec2 a, Vec2 b) {
+    return (Vec2){ a.x + b.x, a.y + b.y };
+}
+Vec2 vec2_scale(Vec2 v, double s) {
+    return (Vec2){ v.x * s, v.y * s };
+}

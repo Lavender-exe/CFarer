@@ -1,0 +1,22 @@
+=== HINT 1: Convert thread + create fibers ===
+g_scheduler_fiber = ConvertThreadToFiber(NULL);
+
+for (int i = 0; i < NUM_FIBERS; i++)
+    g_fibers[i] = CreateFiber(0, fiber_fn, &ctxs[i]);
+
+=== HINT 2: Yield inside fiber_fn ===
+SwitchToFiber(g_scheduler_fiber);   // suspend me, resume scheduler
+
+=== HINT 3: Scheduler dispatches ===
+SwitchToFiber(g_fibers[i]);   // resume fiber i; returns when it yields
+
+=== HINT 4: Scheduler loop ===
+// The loop in main already handles remaining count.
+// Just add SwitchToFiber(g_fibers[i]) in the if(!g_done[i]) block.
+
+=== KEY INSIGHT ===
+SwitchToFiber() does NOT go to the OS - it's a pure user-mode context switch
+(saves/restores registers, stack pointer, FPU state).
+Cost ≈ 50-100 ns vs ~1000 ns for a thread context switch.
+Fibers are single-threaded cooperative: only one runs at a time per OS thread.
+This is the foundation of "green threads" / coroutine schedulers.

@@ -1,0 +1,17 @@
+=== HINT 1 ===
+if / else syntax:
+  if (condition) {
+      ...
+  } else if (other) {
+      ...
+  } else {
+      ...
+  }
+
+=== HINT 2 ===
+Use the return statement inside each branch to send a string back to the caller.
+
+=== HINT 3 (SPOILER) ===
+if (n < 0) return "negative";
+if (n == 0) return "zero";
+return "positive";

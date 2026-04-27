@@ -1,0 +1,22 @@
+=== HINT 1 ===
+malloc signature:  void *malloc(size_t size);
+Cast the result:   int *p = (int *)malloc(len * sizeof(int));
+
+=== HINT 2 ===
+Always NULL-check after malloc:
+  if (p == NULL) { /* handle error */ }
+
+For this exercise, just return NULL on failure - the assert in main will catch it.
+
+=== HINT 3 ===
+free() takes the same pointer you got from malloc:
+  free(p);
+
+=== HINT 4 (SPOILER) ===
+int *int_array_new(int len) {
+    int *p = (int *)malloc((size_t)len * sizeof(int));
+    return p;   // may be NULL - caller checks
+}
+void int_array_free(int *p) {
+    free(p);
+}

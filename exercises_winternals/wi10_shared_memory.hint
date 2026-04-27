@@ -1,0 +1,21 @@
+=== HINT 1: Writer - create + map ===
+HANDLE hmap = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE,
+                                 0, SHM_SIZE, SHM_NAME);
+ShmBlock *blk = (ShmBlock *)MapViewOfFile(hmap, FILE_MAP_WRITE, 0, 0, SHM_SIZE);
+strcpy(blk->message, "Hello from writer!");
+InterlockedExchange(&blk->magic, MAGIC);   // publish atomically
+
+=== HINT 2: Reader - open + map ===
+HANDLE hmap = OpenFileMapping(FILE_MAP_READ, FALSE, SHM_NAME);
+const ShmBlock *blk = (const ShmBlock *)MapViewOfFile(hmap, FILE_MAP_READ, 0, 0, SHM_SIZE);
+
+=== HINT 3: Spin-wait ===
+while (InterlockedCompareExchange((volatile LONG*)&blk->magic, MAGIC, MAGIC) != MAGIC)
+    Sleep(1);
+printf("Reader got: %s\n", blk->message);
+
+=== KEY INSIGHT ===
+Writer uses PAGE_READWRITE / FILE_MAP_WRITE.
+Reader uses PAGE_READONLY / FILE_MAP_READ.
+Both name "CFarerShm" - the kernel routes them to the same physical pages.
+InterlockedExchange ensures the magic write is not reordered before the message.

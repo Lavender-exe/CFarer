@@ -1,0 +1,34 @@
+=== HINT 1: Open self ===
+int fd = open("/proc/self/exe", O_RDONLY);
+
+=== HINT 2: Read ELF header ===
+Elf64_Ehdr ehdr;
+read(fd, &ehdr, sizeof(ehdr));
+
+=== HINT 3: Verify magic ===
+if (memcmp(ehdr.e_ident, ELFMAG, SELFMAG) != 0)  // ELFMAG = "\x7fELF"
+    // not ELF
+
+=== HINT 4: Read program headers ===
+lseek(fd, ehdr.e_phoff, SEEK_SET);
+for (int i = 0; i < ehdr.e_phnum; i++) {
+    Elf64_Phdr phdr;
+    read(fd, &phdr, sizeof(phdr));
+    if (phdr.p_type == PT_LOAD) {
+        printf("LOAD vaddr=0x%llx filesz=0x%llx flags=%c%c%c\n",
+               (unsigned long long)phdr.p_vaddr,
+               (unsigned long long)phdr.p_filesz,
+               (phdr.p_flags & PF_R) ? 'R' : '-',
+               (phdr.p_flags & PF_W) ? 'W' : '-',
+               (phdr.p_flags & PF_X) ? 'X' : '-');
+    }
+}
+close(fd);
+
+=== KEY INSIGHT ===
+Program headers (PT_LOAD) describe what the kernel loader maps into memory.
+Section headers (.text, .data, .bss, .symtab, .strtab) describe linker layout -
+  stripped binaries have no section headers but still run fine (loader uses Phdrs).
+ET_DYN (e_type=3): position-independent executable (PIE) or shared library.
+ET_EXEC (e_type=2): fixed-address executable (no ASLR on the binary itself).
+DYNAMIC segment: contains DT_NEEDED entries (shared library dependencies).

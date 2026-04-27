@@ -1,0 +1,16 @@
+=== HINT 1 ===
+Format specifiers:
+  %d   -> int
+  %f   -> double/float   (%g or %.2f for fewer decimals)
+  %c   -> char
+  %s   -> char* / char[]
+
+=== HINT 2 ===
+Replace the literal text ??? inside each "..." string with the right specifier.
+Example: printf("Value: %d\n", myInt);
+
+=== HINT 3 (SPOILER) ===
+printf("Count: %d\n",  count);
+printf("Pi: %g\n",     pi);
+printf("Letter: %c\n", letter);
+printf("Name: %s\n",   name);

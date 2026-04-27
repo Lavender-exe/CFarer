@@ -1,0 +1,39 @@
+=== HINT 1: CoInit + security ===
+CoInitializeEx(NULL, COINIT_MULTITHREADED);
+VARIANT empty; VariantInit(&empty);
+CoInitializeSecurity(NULL,-1,NULL,NULL,RPC_C_AUTHN_LEVEL_PKT,
+    RPC_C_IMP_LEVEL_IMPERSONATE,NULL,0,NULL);
+
+=== HINT 2: Create ITaskService ===
+CoCreateInstance(CLSID_TaskScheduler, NULL, CLSCTX_INPROC_SERVER,
+    IID_ITaskService, (void**)&pSvc);
+pSvc->Connect(empty, empty, empty, empty);
+
+=== HINT 3: New task + logon trigger ===
+pSvc->NewTask(0, &pTask);
+ITriggerCollection *pTriggers; pTask->get_Triggers(&pTriggers);
+ITrigger *pTrig; pTriggers->Create(TASK_TRIGGER_LOGON, &pTrig);
+ILogonTrigger *pLogon; pTrig->QueryInterface(IID_ILogonTrigger,(void**)&pLogon);
+pLogon->put_Id(SysAllocString(L"LogonTriggerId"));
+
+=== HINT 4: Exec action ===
+IActionCollection *pActions; pTask->get_Actions(&pActions);
+IAction *pAct; pActions->Create(TASK_ACTION_EXEC, &pAct);
+IExecAction *pExec; pAct->QueryInterface(IID_IExecAction,(void**)&pExec);
+// convert exe_path to BSTR and put_Path
+
+=== HINT 5: Register + delete ===
+pSvc->GetFolder(SysAllocString(L"\\"), &pFolder);
+pFolder->RegisterTaskDefinition(SysAllocString(L"CFarerTest"), pTask,
+    TASK_CREATE_OR_UPDATE, empty, empty, TASK_LOGON_INTERACTIVE_TOKEN, empty, NULL);
+// cleanup:
+pFolder->DeleteTask(SysAllocString(L"CFarerTest"), 0);
+
+=== KEY INSIGHT ===
+Scheduled tasks survive reboots, run as specific users/SYSTEM, harder to spot than Run keys.
+schtasks.exe /create is a LOLBin equivalent (no COM needed, leaves same artifacts).
+Detection: Sysmon EventID 1 (process create from taskeng.exe/taskhostw.exe),
+  Task Scheduler operational log, Autoruns.
+Hidden tasks: create under subfolders or use names mimicking system tasks
+  ("MicrosoftEdgeUpdateTask", "GoogleUpdateTask").
+Remote task creation: pSvc->Connect(L"\\\\target", creds...) - same API, lateral movement.

@@ -1,0 +1,24 @@
+=== HINT 1 ===
+qsort comparator receives void* pointers.
+Cast them to the actual type before comparing:
+  const int *ia = (const int *)a;
+  const int *ib = (const int *)b;
+
+=== HINT 2 ===
+Safe integer comparison (avoids overflow from subtraction):
+  if (*ia < *ib) return -1;
+  if (*ia > *ib) return  1;
+  return 0;
+
+=== HINT 3 ===
+For descending order, swap a and b in the comparison (or negate the result).
+
+=== HINT 4 (SPOILER) ===
+int cmp_int_asc(const void *a, const void *b) {
+    const int *ia = (const int *)a;
+    const int *ib = (const int *)b;
+    return (*ia > *ib) - (*ia < *ib);
+}
+int cmp_int_desc(const void *a, const void *b) {
+    return cmp_int_asc(b, a);   // just reverse the arguments
+}

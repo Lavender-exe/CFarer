@@ -1,0 +1,32 @@
+=== HINT 1 ===
+Check fopen immediately:
+  FILE *fp = fopen(path, "r");
+  if (fp == nullptr) return -1;
+
+=== HINT 2 ===
+fread returns bytes read. You must null-terminate manually since fread
+does not do it - and must clamp to avoid writing past the buffer:
+  size_t n = fread(buf, 1, bufsize - 1, fp);
+  buf[n] = '\0';
+
+=== HINT 3 ===
+Guaranteed cleanup - use a goto pattern or just fclose before every return:
+  fclose(fp);
+  return (long)n;
+
+The goto-cleanup pattern (common in kernel/driver code):
+  if (error) { ret = -1; goto cleanup; }
+  ...
+  cleanup:
+      fclose(fp);
+      return ret;
+
+=== HINT 4 (SPOILER) ===
+long open_and_read(const char *path, char *buf, size_t bufsize) {
+    FILE *fp = fopen(path, "r");
+    if (fp == nullptr) return -1;
+    size_t n = fread(buf, 1, bufsize - 1, fp);
+    buf[n] = '\0';
+    fclose(fp);
+    return (long)n;
+}

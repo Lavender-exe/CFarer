@@ -1,0 +1,35 @@
+=== HINT 1 ===
+Reuse what you learned in md03: get the export directory, resolve the
+three arrays (names, ordinals, funcs).
+
+=== HINT 2 ===
+Loop over all named exports:
+  for (DWORD i = 0; i < exp->NumberOfNames; i++) {
+      const char *name = (const char*)((BYTE*)base + names[i]);
+      if (strcmp(name, func_name) == 0) {
+          WORD ord = ordinals[i];
+          return (void*)((BYTE*)base + funcs[ord]);
+      }
+  }
+  return NULL;
+
+=== HINT 3 ===
+Handle the case where export_rva == 0 (module has no exports): return NULL.
+
+=== HINT 4 (SPOILER) ===
+void *my_get_proc_addr(HMODULE base, const char *func_name) {
+    PIMAGE_DOS_HEADER dos = (PIMAGE_DOS_HEADER)base;
+    PIMAGE_NT_HEADERS nt  = (PIMAGE_NT_HEADERS)((BYTE*)base + dos->e_lfanew);
+    DWORD erva = nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
+    if (!erva) return NULL;
+    PIMAGE_EXPORT_DIRECTORY exp = (PIMAGE_EXPORT_DIRECTORY)((BYTE*)base + erva);
+    DWORD *names    = (DWORD*)((BYTE*)base + exp->AddressOfNames);
+    WORD  *ordinals = (WORD*) ((BYTE*)base + exp->AddressOfNameOrdinals);
+    DWORD *funcs    = (DWORD*)((BYTE*)base + exp->AddressOfFunctions);
+    for (DWORD i = 0; i < exp->NumberOfNames; i++) {
+        const char *name = (const char*)((BYTE*)base + names[i]);
+        if (strcmp(name, func_name) == 0)
+            return (void*)((BYTE*)base + funcs[ordinals[i]]);
+    }
+    return NULL;
+}

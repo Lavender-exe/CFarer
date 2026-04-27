@@ -1,0 +1,31 @@
+=== HINT 1: Open Run key ===
+HKEY hKey = NULL;
+LONG rc = RegOpenKeyExA(HKEY_CURRENT_USER,
+    "Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+    0, KEY_SET_VALUE, &hKey);
+
+=== HINT 2: Write value ===
+rc = RegSetValueExA(hKey, VALUE_NAME, 0, REG_SZ,
+    (BYTE*)exe_path, (DWORD)(strlen(exe_path) + 1));
+
+=== HINT 3: Verify ===
+char verify[MAX_PATH]; DWORD vlen = sizeof(verify), vtype;
+RegQueryValueExA(hKey, VALUE_NAME, NULL, &vtype, (BYTE*)verify, &vlen);
+printf("Verified: %s\n", verify);
+
+=== HINT 4: Cleanup ===
+RegDeleteValueA(hKey, VALUE_NAME);
+RegCloseKey(hKey);
+
+=== KEY INSIGHT ===
+HKCU Run: fires at user login, no admin needed.
+HKLM Run: all users, requires admin, more suspicious.
+RunOnce: fires once, self-deletes after execution.
+Stealthier persistence locations:
+  HKCU\...\Explorer\Shell Folders\Startup - startup folder
+  HKLM\SYSTEM\CurrentControlSet\Services - service (admin, survives reboots)
+  HKCU\...\Policies\Explorer\Run - GPO-like, less monitored
+  Scheduled tasks (rt09) - separate database, task scheduler API
+  DLL hijacking in known paths - no registry write at all
+Detection: Autoruns (Sysinternals), EDR registry write monitoring,
+  Sysmon EventID 13 (registry value set).

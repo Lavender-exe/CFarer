@@ -1,0 +1,31 @@
+=== HINT 1 ===
+strtol signature:
+  long strtol(const char *s, char **endptr, int base);
+endptr is set to the first char NOT parsed.
+If endptr == s: nothing was parsed (not a number).
+If *endptr != '\0': there was trailing garbage ("80abc").
+
+=== HINT 2 ===
+Also check errno after strtol - it is set to ERANGE on overflow.
+Reset errno to 0 BEFORE calling strtol.
+
+=== HINT 3 ===
+Full validation sequence:
+  1. if (!s || *s == '\0') return -1;
+  2. errno = 0;
+  3. char *end; long v = strtol(s, &end, 10);
+  4. if (end == s || *end != '\0') return -1;  // bad chars
+  5. if (errno == ERANGE) return -1;           // overflow
+  6. if (v < 1 || v > 65535) return -1;       // range
+  7. return (int)v;
+
+=== HINT 4 (SPOILER) ===
+int parse_port(const char *s) {
+    if (!s || *s == '\0') return -1;
+    errno = 0;
+    char *end;
+    long v = strtol(s, &end, 10);
+    if (end == s || *end != '\0') return -1;
+    if (errno == ERANGE || v < 1 || v > 65535) return -1;
+    return (int)v;
+}

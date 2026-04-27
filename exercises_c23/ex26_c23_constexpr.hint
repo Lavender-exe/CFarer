@@ -1,0 +1,21 @@
+=== HINT 1 ===
+constexpr syntax (C23):
+  constexpr int NAME = value;
+  constexpr double NAME = value;
+
+It must be initialized with a constant expression.
+
+=== HINT 2 ===
+Remove the #define lines and replace with:
+  constexpr int    BUFFER_SIZE = 64;
+  constexpr int    MAX_RETRIES = 3;
+  constexpr double GRAVITY     = 9.81;
+
+=== HINT 3 ===
+constexpr integrates with the type system - you get proper type checking,
+unlike #define which is a raw text substitution.
+
+=== HINT 4 (SPOILER) ===
+constexpr int    BUFFER_SIZE = 64;
+constexpr int    MAX_RETRIES = 3;
+constexpr double GRAVITY     = 9.81;

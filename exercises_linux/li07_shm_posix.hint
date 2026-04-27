@@ -1,0 +1,25 @@
+=== HINT 1: Create shm object ===
+int fd = shm_open(SHM_NAME, O_CREAT | O_RDWR, 0600);
+
+=== HINT 2: Set size ===
+ftruncate(fd, SHM_SIZE);
+
+=== HINT 3: Map it ===
+void *ptr = mmap(NULL, SHM_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+
+=== HINT 4: Write and read ===
+snprintf((char*)ptr, SHM_SIZE, "shared: %d", 42);
+printf("shm contents: %s\n", (char*)ptr);
+
+=== HINT 5: Cleanup ===
+munmap(ptr, SHM_SIZE);
+close(fd);
+shm_unlink(SHM_NAME);  // removes the /dev/shm/<name> entry
+
+=== KEY INSIGHT ===
+shm_open creates a file in /dev/shm (tmpfs).
+MAP_SHARED: writes are visible to all processes that map the same object.
+MAP_PRIVATE: copy-on-write, writes not shared.
+For synchronization between processes sharing memory: use a semaphore
+(sem_open) or a mutex with PTHREAD_PROCESS_SHARED in the shared region.
+Compile with -lrt on older glibc (shm_open/shm_unlink may be in librt).

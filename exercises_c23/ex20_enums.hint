@@ -1,0 +1,23 @@
+=== HINT 1 ===
+Enum syntax:
+  typedef enum { NORTH, SOUTH, EAST, WEST } Direction;
+or without typedef:
+  enum Direction { NORTH, SOUTH, EAST, WEST };
+
+=== HINT 2 ===
+direction_name() signature should be:
+  const char *direction_name(Direction d)  (or: enum Direction d)
+Use a switch statement inside to return the matching string.
+
+=== HINT 3 (SPOILER) ===
+typedef enum { NORTH, SOUTH, EAST, WEST } Direction;
+
+const char *direction_name(Direction d) {
+    switch (d) {
+        case NORTH: return "NORTH";
+        case SOUTH: return "SOUTH";
+        case EAST:  return "EAST";
+        case WEST:  return "WEST";
+        default:    return "unknown";
+    }
+}

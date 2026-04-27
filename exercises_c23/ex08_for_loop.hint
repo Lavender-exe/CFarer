@@ -1,0 +1,14 @@
+=== HINT 1 ===
+for loop syntax:
+  for (init; condition; update) {
+      // body
+  }
+
+=== HINT 2 ===
+Iterate i from 0 to 4 (inclusive).
+Array indexing: squares[i] = ...;
+
+=== HINT 3 (SPOILER) ===
+for (int i = 0; i < 5; i++) {
+    squares[i] = i * i;
+}

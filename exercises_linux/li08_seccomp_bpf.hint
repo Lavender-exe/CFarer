@@ -1,0 +1,24 @@
+=== HINT 1: Set no-new-privs ===
+prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0);
+// Required without CAP_SYS_ADMIN before installing a filter
+
+=== HINT 2: Install filter ===
+// filter[] and prog already defined in install_filter()
+syscall(__NR_seccomp, SECCOMP_SET_MODE_FILTER, 0, &prog);
+// Alternative: prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, &prog);
+
+=== HINT 3: Activate sandbox ===
+install_filter();  // call from main BEFORE any disallowed syscalls
+
+=== HINT 4: Test kill (optional - process will die) ===
+pid_t p = getpid();  // SIGSYS - killed by seccomp filter
+
+=== KEY INSIGHT ===
+BPF programs are verified by the kernel before loading - no infinite loops.
+SECCOMP_RET_KILL: kill thread immediately (SIGSYS).
+SECCOMP_RET_KILL_PROCESS: kill entire process (since Linux 4.14).
+SECCOMP_RET_ERRNO(e): return error e from syscall (non-fatal).
+SECCOMP_RET_TRACE: notify a ptracer (used by strace, sandbox monitors).
+SECCOMP_RET_USER_NOTIF: send notification to a listener fd (Linux 5.0) -
+  used by container runtimes to intercept syscalls without ptrace overhead.
+Chrome renderer, Docker default profile, systemd services all use seccomp-bpf.

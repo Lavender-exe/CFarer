@@ -1,0 +1,35 @@
+=== HINT 1: CoInit + CoSecurity ===
+CoInitializeEx(NULL, COINIT_MULTITHREADED);
+CoInitializeSecurity(NULL,-1,NULL,NULL,
+    RPC_C_AUTHN_LEVEL_DEFAULT,RPC_C_IMP_LEVEL_IMPERSONATE,
+    NULL,EOAC_NONE,NULL);
+
+=== HINT 2: Create WbemLocator + connect ===
+CoCreateInstance(CLSID_WbemLocator, 0, CLSCTX_INPROC_SERVER,
+    IID_IWbemLocator, (LPVOID*)&pLoc);
+BSTR ns = SysAllocString(L"ROOT\\CIMV2");
+pLoc->ConnectServer(ns, NULL, NULL, NULL, 0, NULL, NULL, &pSvc);
+SysFreeString(ns);
+CoSetProxyBlanket(pSvc, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE, NULL,
+    RPC_C_AUTHN_LEVEL_CALL, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE);
+
+=== HINT 3: Get Win32_Process + Create method ===
+pSvc->GetObject(L"Win32_Process", 0, NULL, &pClass, NULL);
+pClass->GetMethod(L"Create", 0, &pMethod, NULL);
+pMethod->SpawnInstance(0, &pInParamsInst);
+VARIANT v; V_VT(&v)=VT_BSTR; V_BSTR(&v)=SysAllocString(L"calc.exe");
+pInParamsInst->Put(L"CommandLine", 0, &v, 0);
+VariantClear(&v);
+
+=== HINT 4: Execute method ===
+IWbemClassObject *pOut = NULL;
+pSvc->ExecMethod(SysAllocString(L"Win32_Process"),
+    SysAllocString(L"Create"), 0, NULL, pInParamsInst, &pOut, NULL);
+// Extract ProcessId from pOut: pOut->Get(L"ProcessId", 0, &vPid, 0, 0);
+
+=== KEY INSIGHT ===
+Remote WMI: change ConnectServer host from NULL to L"\\\\target\\ROOT\\CIMV2"
+  and pass credentials - this is the core of lateral movement.
+WMI execution leaves: WMI provider host (WmiPrvSE.exe) as parent.
+Detection: WMI subscription events, WMI activity log (Microsoft-Windows-WMI-Activity).
+DCOM alternative: MMC20.Application (rt-click menu via Document.ActiveView.ExecuteShellCommand).

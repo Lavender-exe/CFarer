@@ -1,0 +1,12 @@
+=== HINT 1 ===
+Every recursive function needs:
+  1. A base case that stops the recursion
+  2. A recursive case that calls itself with a smaller input
+
+=== HINT 2 ===
+Base case: if n == 0 (or n <= 0), return 1
+Recursive: return n * factorial(n - 1);
+
+=== HINT 3 (SPOILER) ===
+if (n <= 0) return 1;
+return n * factorial(n - 1);

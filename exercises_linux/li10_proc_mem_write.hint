@@ -1,0 +1,32 @@
+=== HINT 1: Read child address from pipe ===
+read(pipefd[0], &child_addr, sizeof(child_addr));
+close(pipefd[0]);
+
+=== HINT 2: Attach with ptrace ===
+ptrace(PTRACE_ATTACH, child, NULL, NULL);
+waitpid(child, NULL, 0);
+
+=== HINT 3: Open /proc/pid/mem ===
+char path[64];
+snprintf(path, sizeof(path), "/proc/%d/mem", child);
+int fd = open(path, O_RDWR);
+
+=== HINT 4: Seek + write ===
+lseek64(fd, (off64_t)child_addr, SEEK_SET);
+int new_val = 42;
+write(fd, &new_val, sizeof(new_val));
+
+=== HINT 5: Detach ===
+ptrace(PTRACE_DETACH, child, NULL, NULL);
+close(fd);
+waitpid(child, &status, 0);
+
+=== KEY INSIGHT ===
+/proc/pid/mem write requires: ptrace permission + PTRACE_ATTACH first.
+Since Linux 3.12 the ptrace attach is mandatory even if you have permission.
+ptrace_scope=0 (Yama): any process can ptrace any other with same UID.
+ptrace_scope=1 (default): only parent can ptrace child.
+ptrace_scope=2: only processes with CAP_SYS_PTRACE.
+ptrace_scope=3: disabled entirely (locked - survives reboots on some distros).
+Alternative (no ptrace): process_vm_writev() syscall - direct cross-process write
+  without attaching, but also requires ptrace permission.

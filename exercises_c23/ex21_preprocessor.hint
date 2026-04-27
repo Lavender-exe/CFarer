@@ -1,0 +1,17 @@
+=== HINT 1 ===
+Macro definitions:
+  #define NAME value
+  #define NAME(params) expression
+
+=== HINT 2 ===
+MAX(a,b) - use the ternary operator, wrap each argument in parens:
+  #define MAX(a, b) ((a) > (b) ? (a) : (b))
+
+=== HINT 3 ===
+SQUARE(x) - wrap x in parens to handle expressions like SQUARE(2+1):
+  #define SQUARE(x) ((x) * (x))
+
+=== HINT 4 (SPOILER) ===
+#define MAX(a, b)  ((a) > (b) ? (a) : (b))
+#define PI         3.14159265358979
+#define SQUARE(x)  ((x) * (x))

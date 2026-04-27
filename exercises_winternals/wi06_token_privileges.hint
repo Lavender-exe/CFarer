@@ -1,0 +1,30 @@
+=== HINT 1: OpenProcessToken ===
+HANDLE token;
+if (!OpenProcessToken(GetCurrentProcess(),
+                      TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY,
+                      &token))
+    return FALSE;
+
+=== HINT 2: Look up the LUID ===
+LUID luid;
+if (!LookupPrivilegeValueA(NULL, priv_name, &luid)) {
+    CloseHandle(token); return FALSE;
+}
+
+=== HINT 3: Fill TOKEN_PRIVILEGES ===
+TOKEN_PRIVILEGES tp;
+tp.PrivilegeCount           = 1;
+tp.Privileges[0].Luid       = luid;
+tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+
+=== HINT 4: Adjust + verify ===
+AdjustTokenPrivileges(token, FALSE, &tp, sizeof(tp), NULL, NULL);
+BOOL ok = (GetLastError() == ERROR_SUCCESS);
+CloseHandle(token);
+return ok;
+
+=== NOTE ===
+AdjustTokenPrivileges returns TRUE even on partial failure.
+You must check GetLastError() == ERROR_SUCCESS afterward.
+Requires the process to already HAVE the privilege in its token
+(admins have SeDebugPrivilege by default, but it starts disabled).

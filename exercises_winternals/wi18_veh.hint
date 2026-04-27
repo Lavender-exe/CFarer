@@ -1,0 +1,27 @@
+=== HINT 1: Register handler ===
+PVOID handler = AddVectoredExceptionHandler(1, div_zero_handler);
+
+=== HINT 2: Inside div_zero_handler ===
+The faulting instruction on x64 is typically:
+  idiv rcx   (or edx:eax / ecx)
+To continue safely, set the divisor register to 1 and let it retry:
+  ep->ContextRecord->Rcx = 1;
+  return EXCEPTION_CONTINUE_EXECUTION;
+
+Or set the result register(s) to 0 and skip the instruction:
+  ep->ContextRecord->Rax = 0;
+  ep->ContextRecord->Rdx = 0;
+  ep->ContextRecord->Rip += 2;   // skip the 2-byte `div rcx` opcode (FRAGILE)
+
+The cleanest approach: just set Rcx=1 and CONTINUE_EXECUTION.
+
+=== HINT 3: Remove handler ===
+RemoveVectoredExceptionHandler(handler);
+
+=== KEY INSIGHT ===
+VEH fires BEFORE the stack is unwound (unlike SEH).
+This means you see every exception even inside try blocks.
+Anti-debug: if STATUS_BREAKPOINT fires without you setting a BP, a debugger is attached.
+Instrumentation tools (Dr. Memory, DynamoRIO) use VEH to intercept every fault.
+
+VEH order: VEH handlers -> SEH frame handlers -> UnhandledExceptionFilter -> crash.

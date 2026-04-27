@@ -1,0 +1,18 @@
+=== HINT 1 ===
+Process32First(snap, &pe) returns TRUE if there is at least one process.
+Then loop: while (Process32Next(snap, &pe)) { ... }
+
+=== HINT 2 ===
+PROCESSENTRY32 must have dwSize set BEFORE the first call:
+  pe.dwSize = sizeof(pe);
+
+=== HINT 3 (SPOILER) ===
+if (Process32First(snap, &pe)) {
+    do {
+        printf("%-8lu %-8lu %-8lu %s\n",
+               pe.th32ProcessID,
+               pe.th32ParentProcessID,
+               pe.cntThreads,
+               pe.szExeFile);
+    } while (Process32Next(snap, &pe));
+}

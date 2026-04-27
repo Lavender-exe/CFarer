@@ -1,0 +1,35 @@
+=== HINT 1: djb2 ===
+unsigned int djb2(const char *name) {
+    unsigned int h = 5381;
+    int c;
+    while ((c = (unsigned char)*name++))
+        h = ((h << 5) + h) ^ c;   // h*33 ^ c
+    return h;
+}
+
+=== HINT 2: hash_get_proc structure ===
+Same export-table walk as md04, but instead of strcmp:
+  if (djb2(name_str) == target_hash)  return fn_va;
+
+=== HINT 3 ===
+Watch out for forwarded exports - an RVA that falls within the export
+directory range is a forwarded name, not a function pointer.  For this
+exercise you can ignore forwarding (kernel32 has very few).
+
+=== HINT 4 (SPOILER) ===
+void *hash_get_proc(HMODULE base, unsigned int target_hash) {
+    PIMAGE_DOS_HEADER dos = (PIMAGE_DOS_HEADER)base;
+    PIMAGE_NT_HEADERS nt  = (PIMAGE_NT_HEADERS)((BYTE*)base + dos->e_lfanew);
+    DWORD erva = nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
+    if (!erva) return NULL;
+    PIMAGE_EXPORT_DIRECTORY exp = (PIMAGE_EXPORT_DIRECTORY)((BYTE*)base + erva);
+    DWORD *names    = (DWORD*)((BYTE*)base + exp->AddressOfNames);
+    WORD  *ordinals = (WORD*) ((BYTE*)base + exp->AddressOfNameOrdinals);
+    DWORD *funcs    = (DWORD*)((BYTE*)base + exp->AddressOfFunctions);
+    for (DWORD i = 0; i < exp->NumberOfNames; i++) {
+        const char *name = (const char*)((BYTE*)base + names[i]);
+        if (djb2(name) == target_hash)
+            return (void*)((BYTE*)base + funcs[ordinals[i]]);
+    }
+    return NULL;
+}

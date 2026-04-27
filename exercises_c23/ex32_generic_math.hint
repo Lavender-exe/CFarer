@@ -1,0 +1,23 @@
+=== HINT 1 ===
+Map each type to the correct stdlib/math function:
+  int    -> abs()
+  long   -> labs()
+  float  -> fabsf()
+  double -> fabs()
+
+=== HINT 2 ===
+_Generic dispatch returns a function pointer or calls the function.
+The cleanest form calls the function directly in each branch:
+
+#define ABS(x) _Generic((x),   \
+    int:    abs(x),            \
+    long:   labs(x),           \
+    float:  fabsf(x),          \
+    double: fabs(x))
+
+=== HINT 3 (SPOILER) ===
+#define ABS(x) _Generic((x),  \
+    int:    abs((int)(x)),    \
+    long:   labs((long)(x)),  \
+    float:  fabsf((float)(x)),\
+    double: fabs((double)(x)))

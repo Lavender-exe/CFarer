@@ -1,0 +1,38 @@
+=== HINT 1: safe_add ===
+Check BEFORE adding.  For addition a+b:
+  overflow if b > 0 && a > INT_MAX - b   (positive overflow)
+  overflow if b < 0 && a < INT_MIN - b   (negative overflow)
+
+=== HINT 2: safe_sub ===
+a-b overflows if b < 0 && a > INT_MAX + b
+             or b > 0 && a < INT_MIN + b
+
+=== HINT 3: safe_mul ===
+Multiplication is trickier.  One approach: use long long intermediary.
+  long long tmp = (long long)a * b;
+  if (tmp > INT_MAX || tmp < INT_MIN) return 0;
+
+=== HINT 4: safe_uadd ===
+Unsigned addition wraps if result < either operand:
+  unsigned tmp = a + b;
+  if (tmp < a) return 0;
+
+=== HINT 5 (SPOILER) ===
+int safe_add(int a, int b, int *out) {
+    if ((b > 0 && a > INT_MAX - b) || (b < 0 && a < INT_MIN - b)) return 0;
+    *out = a + b; return 1;
+}
+int safe_sub(int a, int b, int *out) {
+    if ((b < 0 && a > INT_MAX + b) || (b > 0 && a < INT_MIN + b)) return 0;
+    *out = a - b; return 1;
+}
+int safe_mul(int a, int b, int *out) {
+    long long t = (long long)a * b;
+    if (t > INT_MAX || t < INT_MIN) return 0;
+    *out = (int)t; return 1;
+}
+int safe_uadd(unsigned a, unsigned b, unsigned *out) {
+    unsigned t = a + b;
+    if (t < a) return 0;
+    *out = t; return 1;
+}
