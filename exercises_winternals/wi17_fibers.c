@@ -46,12 +46,26 @@ int main(void) {
     // TODO: ConvertThreadToFiber(NULL) - make main thread a fiber
     g_scheduler_fiber = NULL;
 
+    // gate: without a scheduler fiber SwitchToFiber would crash or hang
+    if (g_scheduler_fiber == NULL) {
+        fprintf(stderr, "FAIL: TODO - call ConvertThreadToFiber(NULL) first\n");
+        return 1;
+    }
+
     FiberCtx ctxs[NUM_FIBERS];
     for (int i = 0; i < NUM_FIBERS; i++) {
         ctxs[i].id  = i;
         g_done[i]   = 0;
         // TODO: CreateFiber(0, fiber_fn, &ctxs[i])
         g_fibers[i] = NULL;
+    }
+
+    // gate: switching to a NULL fiber would crash - fail cleanly instead
+    for (int i = 0; i < NUM_FIBERS; i++) {
+        if (g_fibers[i] == NULL) {
+            fprintf(stderr, "FAIL: TODO - CreateFiber(0, fiber_fn, &ctxs[%d])\n", i);
+            return 1;
+        }
     }
 
     // Scheduler: round-robin until all fibers done

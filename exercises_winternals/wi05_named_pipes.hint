@@ -1,30 +1,25 @@
-=== HINT 1: Server - create pipe ===
-HANDLE pipe = CreateNamedPipeA(
-    PIPE_NAME,
-    PIPE_ACCESS_DUPLEX,
+=== HINT 1: Server - create, connect, exchange ===
+HANDLE pipe = CreateNamedPipeA(PIPE_NAME, PIPE_ACCESS_DUPLEX,
     PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
     1, 512, 512, 0, NULL);
-
-=== HINT 2: Server - wait for client ===
 ConnectNamedPipe(pipe, NULL);
-
-=== HINT 3: Server - read/write ===
-char buf[16] = {0};
-DWORD n;
-ReadFile(pipe, buf, sizeof(buf)-1, &n, NULL);
-// buf should be "PING"
+char buf[16] = {0}; DWORD n;
+ReadFile(pipe, buf, sizeof(buf)-1, &n, NULL);   // buf should be "PING"
 WriteFile(pipe, "PONG", 4, &n, NULL);
-FlushFileBuffers(pipe);
-DisconnectNamedPipe(pipe);
-CloseHandle(pipe);
+FlushFileBuffers(pipe); DisconnectNamedPipe(pipe); CloseHandle(pipe);
+InterlockedExchange(&g_server_ok, 1);
 
-=== HINT 4: Client ===
+=== HINT 2: Client - wait, open, exchange ===
 WaitNamedPipeA(PIPE_NAME, NMPWAIT_WAIT_FOREVER);
 HANDLE h = CreateFileA(PIPE_NAME, GENERIC_READ|GENERIC_WRITE,
                        0, NULL, OPEN_EXISTING, 0, NULL);
 DWORD n;
 WriteFile(h, "PING", 4, &n, NULL);
 char reply[8] = {0};
-ReadFile(h, reply, sizeof(reply)-1, &n, NULL);
-// reply should be "PONG"
+ReadFile(h, reply, sizeof(reply)-1, &n, NULL);  // reply should be "PONG"
 CloseHandle(h);
+InterlockedExchange(&g_client_ok, 1);
+
+=== HINT 3 (SPOILER): Wire the gate ===
+The main() asserts need both flags set to 1. Each thread sets its flag ONLY
+after a full successful exchange, so an aborted conversation fails cleanly.

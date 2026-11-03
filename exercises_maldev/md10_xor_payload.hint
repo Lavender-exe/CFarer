@@ -1,12 +1,12 @@
-=== HINT 1: XOR encode ===
+=== HINT 1 ===
 for (size_t i = 0; i < PAYLOAD_LEN; i++)
     encoded[i] = payload[i] ^ key[i % KEY_LEN];
 
-=== HINT 2: XOR decode (identical operation - XOR is self-inverse) ===
+=== HINT 2 ===
 for (size_t i = 0; i < PAYLOAD_LEN; i++)
     decoded[i] = encoded[i] ^ key[i % KEY_LEN];
 
-=== HINT 3: Assert round-trip ===
+=== HINT 3 (SPOILER) ===
 assert(memcmp(decoded, payload, PAYLOAD_LEN) == 0);
 
 === KEY INSIGHT ===

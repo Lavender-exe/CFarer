@@ -1,31 +1,29 @@
-=== HINT 1: CoInit + CoSecurity ===
+=== HINT 1: COM init + locator + connect (all COM boilerplate) ===
 CoInitializeEx(NULL, COINIT_MULTITHREADED);
 CoInitializeSecurity(NULL,-1,NULL,NULL,
     RPC_C_AUTHN_LEVEL_DEFAULT,RPC_C_IMP_LEVEL_IMPERSONATE,
     NULL,EOAC_NONE,NULL);
-
-=== HINT 2: Create WbemLocator + connect ===
 CoCreateInstance(CLSID_WbemLocator, 0, CLSCTX_INPROC_SERVER,
     IID_IWbemLocator, (LPVOID*)&pLoc);
 BSTR ns = SysAllocString(L"ROOT\\CIMV2");
-pLoc->ConnectServer(ns, NULL, NULL, NULL, 0, NULL, NULL, &pSvc);
+IWbemLocator_ConnectServer(pLoc, ns, NULL, NULL, NULL, 0, NULL, NULL, &pSvc);
 SysFreeString(ns);
 CoSetProxyBlanket(pSvc, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE, NULL,
     RPC_C_AUTHN_LEVEL_CALL, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE);
 
-=== HINT 3: Get Win32_Process + Create method ===
-pSvc->GetObject(L"Win32_Process", 0, NULL, &pClass, NULL);
-pClass->GetMethod(L"Create", 0, &pMethod, NULL);
-pMethod->SpawnInstance(0, &pInParamsInst);
+=== HINT 2: Get Win32_Process + Create method ===
+IWbemServices_GetObject(pSvc, L"Win32_Process", 0, NULL, &pClass, NULL);
+IWbemClassObject_GetMethod(pClass, L"Create", 0, &pMethod, NULL);
+IWbemClassObject_SpawnInstance(pMethod, 0, &pInParamsInst);
 VARIANT v; V_VT(&v)=VT_BSTR; V_BSTR(&v)=SysAllocString(L"calc.exe");
-pInParamsInst->Put(L"CommandLine", 0, &v, 0);
+IWbemClassObject_Put(pInParamsInst, L"CommandLine", 0, &v, 0);
 VariantClear(&v);
 
-=== HINT 4: Execute method ===
+=== HINT 3: Execute method ===
 IWbemClassObject *pOut = NULL;
-pSvc->ExecMethod(SysAllocString(L"Win32_Process"),
-    SysAllocString(L"Create"), 0, NULL, pInParamsInst, &pOut, NULL);
-// Extract ProcessId from pOut: pOut->Get(L"ProcessId", 0, &vPid, 0, 0);
+IWbemServices_ExecMethod(pSvc, L"Win32_Process", L"Create", 0, NULL,
+    pInParamsInst, &pOut, NULL);
+// Extract ProcessId: VARIANT vPid; IWbemClassObject_Get(pOut, L"ProcessId", 0, &vPid, NULL, NULL);
 
 === KEY INSIGHT ===
 Remote WMI: change ConnectServer host from NULL to L"\\\\target\\ROOT\\CIMV2"

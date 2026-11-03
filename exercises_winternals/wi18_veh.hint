@@ -1,27 +1,22 @@
-=== HINT 1: Register handler ===
-PVOID handler = AddVectoredExceptionHandler(1, div_zero_handler);
-
-=== HINT 2: Inside div_zero_handler ===
-The faulting instruction on x64 is typically:
-  idiv rcx   (or edx:eax / ecx)
-To continue safely, set the divisor register to 1 and let it retry:
-  ep->ContextRecord->Rcx = 1;
-  return EXCEPTION_CONTINUE_EXECUTION;
-
-Or set the result register(s) to 0 and skip the instruction:
-  ep->ContextRecord->Rax = 0;
-  ep->ContextRecord->Rdx = 0;
-  ep->ContextRecord->Rip += 2;   // skip the 2-byte `div rcx` opcode (FRAGILE)
-
-The cleanest approach: just set Rcx=1 and CONTINUE_EXECUTION.
-
-=== HINT 3: Remove handler ===
+=== HINT 1: Register + remove ===
+PVOID handler = AddVectoredExceptionHandler(1, lazy_alloc_handler);
+...
 RemoveVectoredExceptionHandler(handler);
 
-=== KEY INSIGHT ===
-VEH fires BEFORE the stack is unwound (unlike SEH).
-This means you see every exception even inside try blocks.
-Anti-debug: if STATUS_BREAKPOINT fires without you setting a BP, a debugger is attached.
-Instrumentation tools (Dr. Memory, DynamoRIO) use VEH to intercept every fault.
+=== HINT 2: Inside the handler ===
+You are already given the matching logic (write access violation at
+LAZY_ADDR). Replace the TODO return with:
+  PVOID page = VirtualAlloc(LAZY_ADDR, 4096,
+                            MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+  if (page) {
+      g_veh_fired = 1;
+      return EXCEPTION_CONTINUE_EXECUTION;   // the faulting write retries
+  }
+  return EXCEPTION_CONTINUE_SEARCH;
 
-VEH order: VEH handlers -> SEH frame handlers -> UnhandledExceptionFilter -> crash.
+=== HINT 3 (KEY INSIGHT) ===
+EXCEPTION_CONTINUE_EXECUTION rewinds to the faulting instruction and re-runs
+it - this time the page exists, so *LAZY_ADDR = 42 succeeds. This is exactly
+how lazy allocators, guard pages and pool allocators work, and how emulators
+map memory on demand. An unhandled AV (wrong handler, wrong address check)
+crashes the process: VEH is your first and only line of defense before SEH.

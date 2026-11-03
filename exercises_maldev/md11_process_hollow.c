@@ -1,4 +1,4 @@
-// CFarer - Maldev Exercise 11
+// CFarer - Malware Development Exercise 11
 // TOPIC: Process Hollowing - CreateProcess Suspended + Memory Manipulation
 // DIFFICULTY: Advanced  PLATFORM: Windows
 // PURPOSE: Authorized malware research / red team education

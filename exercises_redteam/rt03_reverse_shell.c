@@ -27,6 +27,7 @@
 
 #include <winsock2.h>
 #include <windows.h>
+#include <ws2tcpip.h>
 #include <stdio.h>
 #pragma comment(lib, "ws2_32.lib")
 
@@ -80,5 +81,8 @@ int main(void) {
     WSACleanup();
     return 0;
 }
+
+// LOOKAHEAD: rt04 jumps to Advanced. It reuses Toolhelp process enumeration (wi01)
+// and SeDebugPrivilege (wi06); the only new API is MiniDumpWriteDump.
 
 // I AM NOT DONE

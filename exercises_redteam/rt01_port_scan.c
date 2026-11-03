@@ -31,7 +31,7 @@
 #pragma comment(lib, "ws2_32.lib")
 
 #define TARGET "127.0.0.1"
-static const int PORTS[] = { 20,21,22,23,25,53,80,443,445,3389,8080 };
+static const int PORTS[] = { 20,21,22,23,24,25,53,80,443,445,3389,8080 };
 #define NUM_PORTS (sizeof(PORTS)/sizeof(PORTS[0]))
 
 static const char *scan_port(const char *host, int port) {

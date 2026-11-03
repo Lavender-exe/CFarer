@@ -8,13 +8,12 @@ LONG rc = RegOpenKeyExA(HKEY_CURRENT_USER,
 rc = RegSetValueExA(hKey, VALUE_NAME, 0, REG_SZ,
     (BYTE*)exe_path, (DWORD)(strlen(exe_path) + 1));
 
-=== HINT 3: Verify ===
+=== HINT 3: Verify, then clean up (no test persistence left behind) ===
 char verify[MAX_PATH]; DWORD vlen = sizeof(verify), vtype;
 RegQueryValueExA(hKey, VALUE_NAME, NULL, &vtype, (BYTE*)verify, &vlen);
 printf("Verified: %s\n", verify);
-
-=== HINT 4: Cleanup ===
-RegDeleteValueA(hKey, VALUE_NAME);
+rc = RegDeleteValueA(hKey, VALUE_NAME);
+if (rc == ERROR_SUCCESS) printf("(cleanup: run key removed)\n");
 RegCloseKey(hKey);
 
 === KEY INSIGHT ===

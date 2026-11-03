@@ -1,0 +1,8 @@
+=== HINT 1 ===
+Re-read the comment block at the top, it shows every operator you need.
+
+=== HINT 2 ===
+items[i].price * items[i].quantity, summed. For most_expensive return &items[best].
+
+=== HINT 3 ===
+Keep a running total in a loop over the n items.

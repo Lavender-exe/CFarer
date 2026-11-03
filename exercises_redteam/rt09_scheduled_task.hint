@@ -1,33 +1,29 @@
-=== HINT 1: CoInit + security ===
+=== HINT 1: COM init + service (all COM boilerplate) ===
 CoInitializeEx(NULL, COINIT_MULTITHREADED);
 VARIANT empty; VariantInit(&empty);
 CoInitializeSecurity(NULL,-1,NULL,NULL,RPC_C_AUTHN_LEVEL_PKT,
     RPC_C_IMP_LEVEL_IMPERSONATE,NULL,0,NULL);
-
-=== HINT 2: Create ITaskService ===
 CoCreateInstance(CLSID_TaskScheduler, NULL, CLSCTX_INPROC_SERVER,
     IID_ITaskService, (void**)&pSvc);
-pSvc->Connect(empty, empty, empty, empty);
+ITaskService_Connect(pSvc, empty, empty, empty, empty);
+ITaskService_NewTask(pSvc, 0, &pTask);
 
-=== HINT 3: New task + logon trigger ===
-pSvc->NewTask(0, &pTask);
-ITriggerCollection *pTriggers; pTask->get_Triggers(&pTriggers);
-ITrigger *pTrig; pTriggers->Create(TASK_TRIGGER_LOGON, &pTrig);
-ILogonTrigger *pLogon; pTrig->QueryInterface(IID_ILogonTrigger,(void**)&pLogon);
-pLogon->put_Id(SysAllocString(L"LogonTriggerId"));
+=== HINT 2: Logon trigger + exec action ===
+ITriggerCollection *pTriggers; ITaskDefinition_get_Triggers(pTask, &pTriggers);
+ITrigger *pTrig; ITriggerCollection_Create(pTriggers, TASK_TRIGGER_LOGON, &pTrig);
+ILogonTrigger *pLogon;
+ITrigger_QueryInterface(pTrig, IID_ILogonTrigger, (void**)&pLogon);
+IActionCollection *pActions; ITaskDefinition_get_Actions(pTask, &pActions);
+IAction *pAct; IActionCollection_Create(pActions, TASK_ACTION_EXEC, &pAct);
+IExecAction *pExec; IAction_QueryInterface(pAct, IID_IExecAction, (void**)&pExec);
+// convert exe_path to BSTR and IExecAction_put_Path(pExec, bstr_path)
 
-=== HINT 4: Exec action ===
-IActionCollection *pActions; pTask->get_Actions(&pActions);
-IAction *pAct; pActions->Create(TASK_ACTION_EXEC, &pAct);
-IExecAction *pExec; pAct->QueryInterface(IID_IExecAction,(void**)&pExec);
-// convert exe_path to BSTR and put_Path
-
-=== HINT 5: Register + delete ===
-pSvc->GetFolder(SysAllocString(L"\\"), &pFolder);
-pFolder->RegisterTaskDefinition(SysAllocString(L"CFarerTest"), pTask,
+=== HINT 3: Register + delete (use the same `empty` VARIANT) ===
+ITaskService_GetFolder(pSvc, SysAllocString(L"\\"), &pFolder);
+ITaskFolder_RegisterTaskDefinition(pFolder, SysAllocString(L"CFarerTest"), pTask,
     TASK_CREATE_OR_UPDATE, empty, empty, TASK_LOGON_INTERACTIVE_TOKEN, empty, NULL);
 // cleanup:
-pFolder->DeleteTask(SysAllocString(L"CFarerTest"), 0);
+ITaskFolder_DeleteTask(pFolder, SysAllocString(L"CFarerTest"), 0);
 
 === KEY INSIGHT ===
 Scheduled tasks survive reboots, run as specific users/SYSTEM, harder to spot than Run keys.

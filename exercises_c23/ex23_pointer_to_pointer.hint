@@ -1,0 +1,8 @@
+=== HINT 1 ===
+Re-read the comment block at the top, it shows every operator you need.
+
+=== HINT 2 ===
+*pp = new_target. For allocate_int: int *m = malloc(sizeof(int)); check NULL.
+
+=== HINT 3 ===
+if (*pp == NULL) return -1; else **out... store via *out = m; *m = value;

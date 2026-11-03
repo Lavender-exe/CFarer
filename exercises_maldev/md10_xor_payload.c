@@ -1,4 +1,4 @@
-// CFarer - Maldev Exercise 10
+// CFarer - Malware Development Exercise 10
 // TOPIC: XOR Payload Encoding / Decoding
 // DIFFICULTY: Beginner-Intermediate  PLATFORM: Windows
 // PURPOSE: Authorized malware research / red team education
@@ -59,7 +59,7 @@ int main(void) {
     }
 
     // TODO 3: assert memcmp(decoded, payload, PAYLOAD_LEN) == 0
-    // assert(memcmp(decoded, payload, PAYLOAD_LEN) == 0);
+    assert(memcmp(decoded, payload, PAYLOAD_LEN) == 0);  // gate: fails until TODO 1/2 done
 
     hex_dump("original", payload,  PAYLOAD_LEN);
     hex_dump("encoded ", encoded,  PAYLOAD_LEN);

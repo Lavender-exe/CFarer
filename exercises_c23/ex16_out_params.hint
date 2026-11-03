@@ -1,0 +1,8 @@
+=== HINT 1 ===
+Re-read the comment block at the top, it shows every operator you need.
+
+=== HINT 2 ===
+Write through the out pointers: *min_out = ...; *max_out = ...;
+
+=== HINT 3 ===
+Compare a and b, then write the results through the pointers.

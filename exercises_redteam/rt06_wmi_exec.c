@@ -25,9 +25,10 @@
 //
 // Compile: cl /nologo /std:c11 rt06_wmi_exec.c /link ole32.lib oleaut32.lib wbemuuid.lib
 
+#define COBJMACROS
+#define CINTERFACE
 #define _WIN32_DCOM
 #include <windows.h>
-#include <comdef.h>
 #include <wbemidl.h>
 #include <stdio.h>
 #pragma comment(lib, "wbemuuid.lib")
@@ -53,7 +54,9 @@ int main(void) {
     if (FAILED(hr)) { fprintf(stderr, "CoCreateInstance: 0x%lx\n", hr); goto done; }
 
     IWbemServices *pSvc = NULL;
-    // TODO 4: pLoc->ConnectServer(L"ROOT\\CIMV2", NULL, NULL, NULL, 0, NULL, NULL, &pSvc)
+    // TODO 4: BSTR ns = SysAllocString(L"ROOT\\CIMV2");
+    //         hr = IWbemLocator_ConnectServer(pLoc, ns, NULL, NULL, NULL, 0, NULL, NULL, &pSvc);
+    //         SysFreeString(ns);
     hr = E_NOTIMPL;
     if (FAILED(hr)) { fprintf(stderr, "ConnectServer: 0x%lx\n", hr); goto done; }
 
@@ -62,22 +65,22 @@ int main(void) {
     //     RPC_C_AUTHN_LEVEL_CALL, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE);
 
     IWbemClassObject *pClass = NULL, *pMethod = NULL, *pInParams = NULL, *pInParamsInst = NULL;
-    // TODO 6: pSvc->GetObject(L"Win32_Process", 0, NULL, &pClass, NULL)
-    // TODO 7: pClass->GetMethod(L"Create", 0, &pMethod, NULL)
-    // TODO 8: pMethod->SpawnInstance(0, &pInParamsInst)
+    // TODO 6: IWbemServices_GetObject(pSvc, L"Win32_Process", 0, NULL, &pClass, NULL)
+    // TODO 7: IWbemClassObject_GetMethod(pClass, L"Create", 0, &pMethod, NULL)
+    // TODO 8: IWbemClassObject_SpawnInstance(pMethod, 0, &pInParamsInst)
     // TODO 9: set CommandLine parameter: VARIANT v; V_VT(&v)=VT_BSTR;
     //         V_BSTR(&v) = SysAllocString(L"calc.exe");
-    //         pInParamsInst->Put(L"CommandLine", 0, &v, 0);
+    //         IWbemClassObject_Put(pInParamsInst, L"CommandLine", 0, &v, 0);
     //         VariantClear(&v);
-    // TODO 10: pSvc->ExecMethod(L"Win32_Process", L"Create", 0, NULL,
+    // TODO 10: IWbemServices_ExecMethod(pSvc, L"Win32_Process", L"Create", 0, NULL,
     //            pInParamsInst, &pOutParams, NULL)
-    // TODO 11: extract ProcessId from pOutParams, print it
+    // TODO 11: extract ProcessId: IWbemClassObject_Get(pOutParams, L"ProcessId", 0, &vPid, NULL, NULL)
 
     printf("WMI exec skeleton complete - implement TODOs for calc.exe launch\n");
 
 done:
-    if (pSvc)   pSvc->Release();
-    if (pLoc)   pLoc->Release();
+    if (pSvc)   IWbemServices_Release(pSvc);
+    if (pLoc)   IWbemLocator_Release(pLoc);
     CoUninitialize();
     return FAILED(hr) ? 1 : 0;
 }

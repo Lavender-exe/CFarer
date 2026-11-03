@@ -1,4 +1,4 @@
-// CFarer - Maldev Exercise 16
+// CFarer - Malware Development Exercise 16
 // TOPIC: RC4 Stream Cipher - Encrypt/Decrypt Shellcode
 // DIFFICULTY: Intermediate  PLATFORM: Windows
 // PURPOSE: Authorized malware research / red team education
@@ -76,24 +76,24 @@ int main(void) {
     unsigned char ciphertext[PAYLOAD_LEN];
     unsigned char decrypted[PAYLOAD_LEN];
     memcpy(ciphertext, payload, PAYLOAD_LEN);
-    memcpy(decrypted, payload, PAYLOAD_LEN);
+    memcpy(decrypted, ciphertext, PAYLOAD_LEN);  // decrypt the CIPHERTEXT, not payload
 
     // TODO 3: encrypt
     RC4_CTX enc_ctx = {0};
     rc4_init(&enc_ctx, key, KEY_LEN);
     rc4_crypt(&enc_ctx, ciphertext, PAYLOAD_LEN);
+    assert(memcmp(ciphertext, payload, PAYLOAD_LEN) != 0);  // gate: encryption must change bytes
 
     // TODO 4: decrypt (RC4 is symmetric - same operation with same key)
     RC4_CTX dec_ctx = {0};
     rc4_init(&dec_ctx, key, KEY_LEN);
-    rc4_crypt(&dec_ctx, decrypted, PAYLOAD_LEN);  // actually decrypt the ciphertext
-    // BUG: you encrypted the copy but decrypted the copy of payload - fix this
+    rc4_crypt(&dec_ctx, decrypted, PAYLOAD_LEN);
 
     hex_dump("plaintext", payload,    PAYLOAD_LEN);
     hex_dump("encrypted", ciphertext, PAYLOAD_LEN);
     hex_dump("decrypted", decrypted,  PAYLOAD_LEN);
 
-    // TODO 5: assert(memcmp(decrypted, payload, PAYLOAD_LEN) == 0)
+    assert(memcmp(decrypted, payload, PAYLOAD_LEN) == 0);  // round-trip gate
     printf("RC4 round-trip: %s\n",
         memcmp(decrypted, payload, PAYLOAD_LEN) == 0 ? "PASS" : "FAIL");
     return 0;

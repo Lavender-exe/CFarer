@@ -1,4 +1,4 @@
-// CFarer - Maldev Exercise 12
+// CFarer - Malware Development Exercise 12
 // TOPIC: APC Injection - QueueUserAPC to alertable thread
 // DIFFICULTY: Advanced  PLATFORM: Windows
 // PURPOSE: Authorized malware research / red team education

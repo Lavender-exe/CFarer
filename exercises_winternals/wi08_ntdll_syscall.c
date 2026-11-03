@@ -21,6 +21,7 @@
 #include <windows.h>
 #include <winternl.h>  // SYSTEM_INFORMATION_CLASS, etc.
 #include <stdio.h>
+#include <assert.h>
 
 // ntdll exports - not in SDK headers as function pointers, so load dynamically
 typedef NTSTATUS (NTAPI *PFN_NtQuerySystemInformation)(
@@ -29,7 +30,13 @@ typedef NTSTATUS (NTAPI *PFN_NtQuerySystemInformation)(
 typedef NTSTATUS (NTAPI *PFN_NtAllocateVirtualMemory)(
     HANDLE, PVOID*, ULONG_PTR, PSIZE_T, ULONG, ULONG);
 
+#ifndef NT_SUCCESS
 #define NT_SUCCESS(s)  ((NTSTATUS)(s) >= 0)
+#endif
+
+// Filled in by the TODOs below - the end-of-main asserts check them.
+static ULONGLONG g_boot_time   = 0;   // BootTime as returned by NtQSI
+static PVOID     g_alloc_base  = NULL;
 
 int main(void) {
     HMODULE ntdll = GetModuleHandleA("ntdll.dll");
@@ -39,13 +46,21 @@ int main(void) {
     PFN_NtQuerySystemInformation NtQSI = NULL;
     PFN_NtAllocateVirtualMemory  NtAVM = NULL;
 
+    // gate: both pointers must be resolved before anything else runs
+    assert(NtQSI != NULL);
+    assert(NtAVM != NULL);
+
     // TODO: call NtQSI with SystemTimeOfDayInformation (class 3)
     // to get uptime - struct is SYSTEM_TIMEOFDAY_INFORMATION
     // Print BootTime and CurrentTime (LARGE_INTEGER as seconds)
+    // and store tod.BootTime.QuadPart into g_boot_time
 
     // TODO: call NtAVM to allocate a 4KB page (MEM_COMMIT|MEM_RESERVE, PAGE_READWRITE)
     // Verify the pointer is non-NULL, write a value, read it back
+    // and store the base pointer into g_alloc_base (VirtualFree it after)
 
+    assert(g_boot_time  != 0);      // NtQSI returned a real boot time
+    assert(g_alloc_base != NULL);   // NtAVM returned a usable page
     printf("Direct ntdll calls complete!\n");
     return 0;
 }

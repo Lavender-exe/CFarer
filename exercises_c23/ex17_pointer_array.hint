@@ -1,0 +1,8 @@
+=== HINT 1 ===
+Re-read the comment block at the top, it shows every operator you need.
+
+=== HINT 2 ===
+*(arr + i) is the i-th element. For first_negative walk indexes 0..len-1.
+
+=== HINT 3 ===
+Track the best index, return &arr[best] at the end (or nullptr).

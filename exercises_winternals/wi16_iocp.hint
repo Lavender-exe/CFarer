@@ -1,24 +1,16 @@
-=== HINT 1: Create port ===
+=== HINT 1: Create port + worker loop ===
 HANDLE port = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, NUM_WORKERS);
-// concurrency=NUM_WORKERS: at most N threads run simultaneously
-
-=== HINT 2: Worker loop ===
 BOOL ok = GetQueuedCompletionStatus(port, &bytes, &key, &ov, INFINITE);
-if (!ok && !ov) break;   // port closed or error
+if (!ok && !ov) break;        // port closed or error
 if (key == SENTINEL_KEY) break;
 InterlockedAdd(&g_total, (LONG)bytes);
 
-=== HINT 3: Post tasks ===
-PostQueuedCompletionStatus(port, (DWORD)i, 1, NULL);
-
-=== HINT 4: Post sentinels ===
+=== HINT 2: Post tasks + sentinels ===
+PostQueuedCompletionStatus(port, (DWORD)i, 1, NULL);                  // tasks
 for (int i = 0; i < NUM_WORKERS; i++)
-    PostQueuedCompletionStatus(port, 0, SENTINEL_KEY, NULL);
+    PostQueuedCompletionStatus(port, 0, SENTINEL_KEY, NULL);          // one sentinel per worker
 
-=== KEY INSIGHT ===
-IOCP is the foundation of Windows async I/O:
-  - Associate a file/socket with the port via the second CreateIoCompletionPort call
-  - Issue async ReadFile/WriteFile with OVERLAPPED
-  - Workers call GetQueuedCompletionStatus - OS wakes exactly one worker per completion
-  - The concurrency hint prevents > N threads running at once (reduces context switches)
-  - This is O(1) per notification regardless of file/socket count - scales to 100k connections
+=== HINT 3 (KEY INSIGHT) ===
+The OS wakes exactly one worker per completion. The concurrency hint prevents
+more than N threads running at once. Per-notification cost is O(1) regardless
+of how many file/socket handles feed the port - scales to 100k connections.

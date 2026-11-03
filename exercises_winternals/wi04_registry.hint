@@ -1,23 +1,17 @@
-=== HINT 1: Create/open key ===
+=== HINT 1: Create + write ===
 DWORD disp;
 RegCreateKeyExA(HKEY_CURRENT_USER, KEY_PATH, 0, NULL,
-                REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS,
-                NULL, &hkey, &disp);
-
-=== HINT 2: Write DWORD ===
+                REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &hkey, &disp);
 DWORD val = 1;
 RegSetValueExA(hkey, "Version", 0, REG_DWORD, (BYTE*)&val, sizeof(val));
-
-=== HINT 3: Write string ===
 const char *author = "CFarer";
-RegSetValueExA(hkey, "Author", 0, REG_SZ,
-               (BYTE*)author, (DWORD)(strlen(author)+1));
+RegSetValueExA(hkey, "Author", 0, REG_SZ, (BYTE*)author, (DWORD)(strlen(author)+1));
 
-=== HINT 4: Read values ===
+=== HINT 2: Read values back ===
 RegQueryValueExA(hkey, "Version", NULL, &type, (BYTE*)&version, &size);
 RegQueryValueExA(hkey, "Author",  NULL, &type, (BYTE*)author,   &size);
 
-=== HINT 5: Cleanup ===
+=== HINT 3 (SPOILER): Cleanup ===
 RegDeleteValueA(hkey, "Version");
 RegDeleteValueA(hkey, "Author");
 RegCloseKey(hkey);

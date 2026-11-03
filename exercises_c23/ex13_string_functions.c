@@ -2,6 +2,9 @@
 // TOPIC: <string.h> - strlen, strcpy, strcat, strcmp
 // DIFFICULTY: Intermediate
 //
+// NEXT: the next exercise introduces pointers, the most important (and
+// trickiest) idea in C. Take it slow.
+//
 // Task: Use functions from <string.h> to build a greeting string.
 // Starting from an empty buffer, concatenate first name + " " + last name,
 // then check the result equals "Ada Lovelace" and its length is 12.

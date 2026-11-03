@@ -1,4 +1,4 @@
-// CFarer - Maldev Exercise 15
+// CFarer - Malware Development Exercise 15
 // TOPIC: Early-Bird APC Injection
 // DIFFICULTY: Advanced  PLATFORM: Windows
 // PURPOSE: Authorized malware research / red team education

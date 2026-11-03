@@ -22,6 +22,7 @@
 
 #include <windows.h>
 #include <stdio.h>
+#include <assert.h>
 
 int main(void) {
     HMODULE base = LoadLibraryA("kernel32.dll");
@@ -39,6 +40,7 @@ int main(void) {
     DWORD  *names    = NULL;
     WORD   *ordinals = NULL;
     DWORD  *funcs    = NULL;
+    assert(exp != NULL && names && ordinals && funcs);  // gate
 
     // TODO: loop min(20, exp->NumberOfNames) times, print name and address
 

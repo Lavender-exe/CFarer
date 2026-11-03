@@ -1,29 +1,24 @@
-=== HINT 1: safe_divide ===
-__try {
-    result = a / b;
-}
-__except(GetExceptionCode() == EXCEPTION_INT_DIVIDE_BY_ZERO
-         ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH) {
-    return INT_MIN;
-}
+=== HINT 1: Fill the guarded bodies ===
+Inside each guarded block put the risky operation:
+  result = a / b;      (safe_divide)
+  val = *ptr;          (safe_deref, MSVC/Clang path)
+In the handler body / after catching, produce the fallback:
+  safe_divide: return INT_MIN;   safe_deref: fall through, val stays 0.
 
-=== HINT 2: Filter values ===
-EXCEPTION_EXECUTE_HANDLER   (1)  - execute the __except block (catch)
-EXCEPTION_CONTINUE_SEARCH   (0)  - don't handle here, unwind further
-EXCEPTION_CONTINUE_EXECUTION(-1) - resume at faulting instruction (rare/dangerous)
+=== HINT 2: How the MinGW path works ===
+GCC cannot compile MS SEH syntax. excpt.h provides __try1(filter)/__except1:
+the filter gets EXCEPTION_POINTERS* and returns EXCEPTION_EXECUTE_HANDLER (1)
+to catch or EXCEPTION_CONTINUE_SEARCH (0) to pass the exception up. The
+provided divzero_filter already does this for divide-by-zero - just wire the
+bodies. MinGW allows only ONE such scope per .c file (fixed asm labels),
+which is why only safe_divide is SEH-guarded here.
 
-=== HINT 3: __finally ===
-__try {
-    // code that might fail
-}
-__finally {
-    cleaned_up = 1;   // ALWAYS runs, even if exception propagates
-}
-Note: __finally and __except cannot both appear in the same __try block directly.
-Nest them: outer __try/__finally, inner __try/__except.
-
-=== HINT 4: Common exception codes ===
-EXCEPTION_ACCESS_VIOLATION        0xC0000005
-EXCEPTION_INT_DIVIDE_BY_ZERO      0xC0000094
-EXCEPTION_STACK_OVERFLOW           0xC00000FD
-EXCEPTION_BREAKPOINT               0x80000003
+=== HINT 3 (SPOILER): safe_deref on MinGW ===
+Probe the page before touching it (VirtualQuery, see wi03):
+  MEMORY_BASIC_INFORMATION mbi;
+  if (ptr == NULL || VirtualQuery(ptr, &mbi, sizeof(mbi)) != sizeof(mbi) ||
+      mbi.State != MEM_COMMIT)
+      return 0;
+  val = *ptr;
+MSVC/Clang users can instead wrap val = *ptr in __try/__except with a filter
+on EXCEPTION_ACCESS_VIOLATION, and can additionally demo __finally.

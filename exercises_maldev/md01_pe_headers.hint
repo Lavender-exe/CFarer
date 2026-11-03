@@ -6,18 +6,16 @@ Cast it directly to PIMAGE_DOS_HEADER.
 IMAGE_DOS_HEADER.e_lfanew is a LONG offset from the base to the NT headers.
   PIMAGE_NT_HEADERS nt = (PIMAGE_NT_HEADERS)((BYTE*)base + dos->e_lfanew);
 
-=== HINT 3 ===
 Magic values:
   IMAGE_DOS_SIGNATURE  = 0x5A4D  ("MZ")
   IMAGE_NT_SIGNATURE   = 0x00004550  ("PE\0\0")
 
-=== HINT 4 ===
 Fields to print:
   nt->OptionalHeader.ImageBase
   nt->OptionalHeader.AddressOfEntryPoint
   nt->FileHeader.NumberOfSections
 
-=== HINT 5 (SPOILER) ===
+=== HINT 3 (SPOILER) ===
 HMODULE base = GetModuleHandleA(NULL);
 PIMAGE_DOS_HEADER dos = (PIMAGE_DOS_HEADER)base;
 if (dos->e_magic != IMAGE_DOS_SIGNATURE) { puts("Not a PE!"); return 1; }

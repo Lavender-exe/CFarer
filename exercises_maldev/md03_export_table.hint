@@ -11,13 +11,12 @@ The three arrays are also stored as RVAs:
   WORD  *ordinals = (WORD*) ((BYTE*)base + exp->AddressOfNameOrdinals);
   DWORD *funcs    = (DWORD*)((BYTE*)base + exp->AddressOfFunctions);
 
-=== HINT 3 ===
 For each name index i:
   const char *name = (const char*)((BYTE*)base + names[i]);
   WORD  ord        = ordinals[i];
   void *fn         = (void*)((BYTE*)base + funcs[ord]);
 
-=== HINT 4 (SPOILER) ===
+=== HINT 3 (SPOILER) ===
 PIMAGE_EXPORT_DIRECTORY exp =
     (PIMAGE_EXPORT_DIRECTORY)((BYTE*)base + export_rva);
 DWORD *names    = (DWORD*)((BYTE*)base + exp->AddressOfNames);

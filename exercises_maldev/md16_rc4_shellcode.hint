@@ -1,4 +1,4 @@
-=== HINT 1: KSA (Key Scheduling Algorithm) ===
+=== HINT 1 ===
 unsigned j = 0;
 for (int i = 0; i < 256; i++) {
     j = (j + ctx->S[i] + key[i % keylen]) % 256;
@@ -7,7 +7,7 @@ for (int i = 0; i < 256; i++) {
     ctx->S[j] = tmp;
 }
 
-=== HINT 2: PRGA (Pseudo-Random Generation / keystream) ===
+=== HINT 2 ===
 for (size_t n = 0; n < buflen; n++) {
     ctx->i = (ctx->i + 1) % 256;
     ctx->j = (ctx->j + ctx->S[ctx->i]) % 256;
@@ -17,7 +17,7 @@ for (size_t n = 0; n < buflen; n++) {
     buf[n] ^= ctx->S[(ctx->S[ctx->i] + ctx->S[ctx->j]) % 256];
 }
 
-=== HINT 3: Encrypt then decrypt correctly ===
+=== HINT 3 (SPOILER) ===
 // Encrypt a COPY of payload into ciphertext:
 memcpy(ciphertext, payload, PAYLOAD_LEN);
 rc4_init(&enc_ctx, key, KEY_LEN);

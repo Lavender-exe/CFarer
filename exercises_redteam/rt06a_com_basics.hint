@@ -1,0 +1,27 @@
+=== HINT 1: Initialize COM ===
+HRESULT hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+if (FAILED(hr)) return 1;
+// COINIT_MULTITHREADED vs COINIT_APARTMENTTHREADED: either works here;
+// WMI examples conventionally use MULTITHREADED.
+
+=== HINT 2: Create the WbemLocator object ===
+IWbemLocator *pLoc = NULL;
+hr = CoCreateInstance(CLSID_WbemLocator, NULL, CLSCTX_INPROC_SERVER,
+    IID_IWbemLocator, (LPVOID*)&pLoc);
+// CLSID = which object to create, IID = which interface you want back
+
+=== HINT 3: Connect to the WMI namespace + set auth ===
+BSTR ns = SysAllocString(L"ROOT\\CIMV2");
+hr = IWbemLocator_ConnectServer(pLoc, ns, NULL, NULL, NULL, 0, NULL, NULL, &pSvc);
+SysFreeString(ns);
+hr = CoSetProxyBlanket(pSvc, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE, NULL,
+    RPC_C_AUTHN_LEVEL_CALL, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE);
+
+=== KEY INSIGHT ===
+In C, COM calls go through COBJMACROS helpers: IWbemLocator_ConnectServer(pLoc, ...)
+is just pLoc->lpVtbl->ConnectServer(pLoc, ...) - the object is the first argument.
+HRESULTs: FAILED(hr) checks the sign bit, S_OK means success. Every object is
+reference-counted - Release() what you create (IWbemLocator_Release(pLoc)).
+BSTR strings are UTF-16 and SysAllocString'd.
+The exact same pattern (CoCreateInstance -> Connect -> use -> Release) drives
+WMI (rt06) and the Task Scheduler (rt09); only the CLSID and interfaces change.

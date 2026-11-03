@@ -1,4 +1,4 @@
-// CFarer - Maldev Exercise 14
+// CFarer - Malware Development Exercise 14
 // TOPIC: HTTP Beacon via WinINet
 // DIFFICULTY: Intermediate  PLATFORM: Windows
 // PURPOSE: Authorized malware research / red team education

@@ -1,0 +1,8 @@
+=== HINT 1 ===
+Loop over the array and call the function: arr[i] = fn(arr[i]);
+
+=== HINT 2 ===
+for (int i = 0; i < len; i++) arr[i] = fn(arr[i]);
+
+=== HINT 3 ===
+That loop IS the whole function body.

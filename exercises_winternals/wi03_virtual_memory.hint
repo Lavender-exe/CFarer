@@ -4,17 +4,14 @@ VirtualQuery loop pattern:
       addr += mbi.RegionSize;
       ...
   }
+Only count committed pages: if (mbi.State == MEM_COMMIT) total_committed += mbi.RegionSize;
 
 === HINT 2 ===
-Only count committed pages:
-  if (mbi.State == MEM_COMMIT) { total_committed += mbi.RegionSize; }
-
-=== HINT 3 ===
 Check protection with the helper functions already provided (is_exec / is_rwx).
 Guard pages (PAGE_GUARD) have their permission ORed with the base protection -
 mask it out: DWORD prot = mbi.Protect & ~PAGE_GUARD;
 
-=== HINT 4 (SPOILER) ===
+=== HINT 3 (SPOILER) ===
 while (VirtualQuery(addr, &mbi, sizeof(mbi)) == sizeof(mbi)) {
     if (mbi.State == MEM_COMMIT) {
         DWORD prot = mbi.Protect & ~PAGE_GUARD;

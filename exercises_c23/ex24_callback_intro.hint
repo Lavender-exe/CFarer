@@ -1,0 +1,8 @@
+=== HINT 1 ===
+Re-read the comment block at the top, it shows every operator you need.
+
+=== HINT 2 ===
+Assign the function name directly: op = double_it; Call twice: x = fn(x); x = fn(x);
+
+=== HINT 3 ===
+mode 1 -> op = double_it; mode 2 -> op = square; mode 3 -> op = negate;

@@ -1,7 +1,7 @@
-=== HINT 1: Get in-memory ntdll ===
+=== HINT 1 ===
 HMODULE mem_ntdll = GetModuleHandleA("ntdll.dll");
 
-=== HINT 2: Map disk copy ===
+=== HINT 2 ===
 char path[MAX_PATH];
 GetSystemDirectoryA(path, MAX_PATH);
 strcat_s(path, MAX_PATH, "\\ntdll.dll");
@@ -10,12 +10,12 @@ HANDLE hFile    = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ, NULL,
 HANDLE hMapping = CreateFileMappingA(hFile, NULL, PAGE_READONLY, 0, 0, NULL);
 PVOID  disk_ntdll = MapViewOfFile(hMapping, FILE_MAP_READ, 0, 0, 0);
 
-=== HINT 3: Find .text section ===
+
 // Use find_section() helper already in the exercise file
 PIMAGE_SECTION_HEADER mem_text  = find_section(mem_ntdll,  ".text");
 PIMAGE_SECTION_HEADER disk_text = find_section(disk_ntdll, ".text");
 
-=== HINT 4: Compare bytes ===
+=== HINT 3 (SPOILER) ===
 BYTE *mem_bytes  = (BYTE*)mem_ntdll  + mem_text->VirtualAddress;
 BYTE *disk_bytes = (BYTE*)disk_ntdll + disk_text->PointerToRawData;
 // Compare first N bytes for hook signatures (JMP/CALL opcode = E9/FF)

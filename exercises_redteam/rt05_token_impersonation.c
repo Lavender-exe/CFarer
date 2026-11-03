@@ -93,4 +93,7 @@ int main(void) {
     return 0;
 }
 
+// LOOKAHEAD: rt06 and rt09 use COM, which no earlier exercise has taught.
+// Complete rt06a_com_basics first - it covers COM init + object creation.
+
 // I AM NOT DONE

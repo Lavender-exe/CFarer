@@ -23,16 +23,19 @@
 
 #include <windows.h>
 #include <stdio.h>
+#include <assert.h>
 
 int main(void) {
     // TODO: get base address of this process's PE image
     HMODULE base = NULL;   // replace with GetModuleHandleA(NULL)
+    assert(base != NULL);  // gate: fails until you resolve the base
 
     // TODO: cast to PIMAGE_DOS_HEADER and check Magic == IMAGE_DOS_SIGNATURE
     PIMAGE_DOS_HEADER dos = NULL;
 
     // TODO: walk e_lfanew to get PIMAGE_NT_HEADERS
     PIMAGE_NT_HEADERS nt  = NULL;
+    assert(nt != NULL && nt->Signature == IMAGE_NT_SIGNATURE);
 
     // TODO: print the three fields listed above
 

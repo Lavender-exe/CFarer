@@ -17,7 +17,8 @@
 // Test against a notepad.exe you launch yourself.
 //
 // NOTE: This requires a 64-bit build targeting a 64-bit process.
-//       Compile with: cl /std:c11 md05_process_injection_shellcode.c
+//       Compile via:  python cfarer.py   (or: x86_64-w64-mingw32-gcc
+//       -std=c23 -Wall -o md05.exe md05_process_injection_shellcode.c)
 
 #include <windows.h>
 #include <stdio.h>

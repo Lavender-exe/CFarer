@@ -5,12 +5,11 @@ int conn = connect(s, (struct sockaddr*)&addr, sizeof(addr));
 DWORD timeout_ms = 2000;
 setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, (char*)&timeout_ms, sizeof(timeout_ms));
 
-=== HINT 3: Send probe ===
-send(s, send_str, (int)strlen(send_str), 0);
-
-=== HINT 4: Receive banner ===
+=== HINT 3: Send probe, then read banner ===
+if (send_str) send(s, send_str, (int)strlen(send_str), 0);
 int n = recv(s, buf, sizeof(buf)-1, 0);
 buf[n > 0 ? n : 0] = '\0';
+// FTP/SMTP send their banner without any probe - just recv after connect.
 
 === KEY INSIGHT ===
 Banner grabbing reveals: software name, version, OS, misconfiguration.

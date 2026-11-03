@@ -1,33 +1,22 @@
-=== HINT 1: Create objects ===
+=== HINT 1: Create + inspect ===
 HANDLE mtx = CreateMutexA(NULL, FALSE, "CFarerMutex");
 HANDLE evt = CreateEventA(NULL, TRUE, FALSE, "CFarerEvent");
-
-=== HINT 2: GetHandleInformation ===
 DWORD flags;
 GetHandleInformation(mtx, &flags);
-printf("Mutex flags: 0x%lX  (INHERIT=%d  PROTECT=%d)\n",
-       flags,
+printf("Mutex flags: 0x%lX  (INHERIT=%d  PROTECT=%d)\n", flags,
        (flags & HANDLE_FLAG_INHERIT) != 0,
        (flags & HANDLE_FLAG_PROTECT_FROM_CLOSE) != 0);
 
-=== HINT 3: SetHandleInformation ===
+=== HINT 2: Inherit flag + duplicate ===
 SetHandleInformation(mtx, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
-// Verify:
 GetHandleInformation(mtx, &flags);
 assert(flags & HANDLE_FLAG_INHERIT);
-
-=== HINT 4: DuplicateHandle ===
 HANDLE evt_dup;
-DuplicateHandle(GetCurrentProcess(), evt,
-                GetCurrentProcess(), &evt_dup,
+DuplicateHandle(GetCurrentProcess(), evt, GetCurrentProcess(), &evt_dup,
                 0, FALSE, DUPLICATE_SAME_ACCESS);
 
-=== HINT 5: Signal + wait ===
+=== HINT 3 (SPOILER): Aliasing + cleanup ===
 SetEvent(evt);
 DWORD wr = WaitForSingleObject(evt_dup, 100);
-assert(wr == WAIT_OBJECT_0);   // same underlying object
-
-=== HINT 6: Cleanup ===
-CloseHandle(evt_dup);
-CloseHandle(evt);
-CloseHandle(mtx);
+assert(wr == WAIT_OBJECT_0);   // duplicate aliases the SAME underlying object
+CloseHandle(evt_dup); CloseHandle(evt); CloseHandle(mtx);

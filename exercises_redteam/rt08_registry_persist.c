@@ -35,7 +35,7 @@ int main(void) {
 
     HKEY hKey = NULL;
     // TODO 1: RegOpenKeyExA(HKEY_CURRENT_USER, RUN_KEY, 0, KEY_SET_VALUE, &hKey)
-    LONG rc = ERROR_SUCCESS; // replace
+    LONG rc = ERROR_FILE_NOT_FOUND; // replace
     if (rc != ERROR_SUCCESS) {
         fprintf(stderr, "RegOpenKeyExA failed: %ld\n", rc);
         return 1;
@@ -43,7 +43,7 @@ int main(void) {
 
     // TODO 2: RegSetValueExA(hKey, VALUE_NAME, 0, REG_SZ,
     //           (BYTE*)exe_path, (DWORD)(strlen(exe_path)+1))
-    rc = ERROR_SUCCESS; // replace
+    rc = ERROR_CANTWRITE; // replace
     if (rc == ERROR_SUCCESS)
         printf("Persistence key written: HKCU\\%s\\%s\n", RUN_KEY, VALUE_NAME);
 
@@ -53,9 +53,9 @@ int main(void) {
     // RegQueryValueExA(hKey, VALUE_NAME, NULL, &vtype, (BYTE*)verify, &vlen);
     // printf("Verified:  %s\n", verify);
 
-    // TODO 4: cleanup - remove the test key
-    // RegDeleteValueA(hKey, VALUE_NAME);
-    printf("(cleanup: run key removed)\n");
+    // TODO 4: cleanup - remove the test value (don't leave test persistence)
+    // rc = RegDeleteValueA(hKey, VALUE_NAME);
+    // if (rc == ERROR_SUCCESS) printf("(cleanup: run key removed)\n");
 
     // TODO 5: RegCloseKey(hKey)
     return 0;

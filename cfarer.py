@@ -153,14 +153,15 @@ def find_compiler() -> str | None:
 
 def build_compile_cmd(compiler: str, src: Path, out: Path, track_name: str) -> list:
     src_s, out_s = str(src), str(out)
-    is_win_track   = track_name in ("maldev", "winternals")
+    is_win_track   = track_name in ("maldev", "winternals", "redteam")
     is_linux_track = track_name == "linux"
 
     if compiler == "cl":
         cmd = ["cl", "/nologo", "/std:c11", "/W3", f"/Fe:{out_s}", src_s]
         if is_win_track:
             cmd += ["/link", "kernel32.lib", "advapi32.lib", "user32.lib",
-                    "ntdll.lib", "ws2_32.lib"]
+                    "ntdll.lib", "ws2_32.lib", "wininet.lib",
+                    "ole32.lib", "oleaut32.lib", "bcrypt.lib"]
         if is_linux_track:
             print(clr("WARNING: linux track exercises require gcc on Linux.", C.YELLOW))
         return cmd
@@ -169,7 +170,13 @@ def build_compile_cmd(compiler: str, src: Path, out: Path, track_name: str) -> l
         cmd = [compiler, f"-std={std}", "-Wall", "-Wextra", "-o", out_s, src_s]
         if is_linux_track:
             cmd += ["-lrt", "-lpthread"]
-        elif platform.system() != "Windows":
+        elif is_win_track:
+            # mingw ignores MSVC-style #pragma comment(lib, ...) - link explicitly.
+            # redteam needs ole32/oleaut32 (WMI COM), bcrypt (CNG MD4), advapi32
+            # (registry); unused libs are harmless for the other Windows tracks.
+            cmd += ["-lws2_32", "-lwininet", "-ladvapi32",
+                    "-lole32", "-loleaut32", "-lbcrypt"]
+        else:
             cmd.append("-lm")
         return cmd
 
@@ -310,7 +317,7 @@ def _handle_inline_cmd(cmd: str, track_name: str, state: dict, exercises: list) 
                 save_state(track_name, state)
                 print(clr(f"  Jumped to exercise {n+1}: {exercises[n].name}", C.CYAN))
             else:
-                print(clr(f"  Invalid exercise number (1–{len(exercises)})", C.RED))
+                print(clr(f"  Invalid exercise number (1-{len(exercises)})", C.RED))
         except (ValueError, IndexError):
             print(clr("  Usage: goto <number>", C.YELLOW))
 
@@ -567,7 +574,7 @@ def cmd_goto(n: int, track_name: str):
     exercises = get_exercises(track_name)
     idx       = n - 1
     if not (0 <= idx < len(exercises)):
-        print(clr(f"Exercise {n} not found (valid: 1–{len(exercises)})", C.RED))
+        print(clr(f"Exercise {n} not found (valid: 1-{len(exercises)})", C.RED))
         sys.exit(1)
     state = load_state(track_name)
     state["current_index"] = idx

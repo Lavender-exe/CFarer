@@ -2,6 +2,10 @@
 // TOPIC: Arrays, sizeof, iteration
 // DIFFICULTY: Intermediate
 //
+// NOTE: 'int *arr' is a pointer - arrays are passed to functions as
+// a pointer to their first element. You can still use arr[i] here.
+// Pointers get their own exercises starting at exercise 14.
+//
 // Task: Implement array_sum() - return the sum of all elements.
 // Then implement array_max() - return the largest element.
 

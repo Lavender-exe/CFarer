@@ -1,4 +1,4 @@
-// CFarer - Maldev Exercise 13
+// CFarer - Malware Development Exercise 13
 // TOPIC: NTDLL Unhooking - restore hooked syscall stubs
 // DIFFICULTY: Advanced  PLATFORM: Windows
 // PURPOSE: Authorized malware research / red team education

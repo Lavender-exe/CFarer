@@ -1,0 +1,8 @@
+=== HINT 1 ===
+Re-read the comment block at the top, it shows every operator you need.
+
+=== HINT 2 ===
+Use p = &x to point at a variable and *p to read/write through it.
+
+=== HINT 3 ===
+Set y through p *after* re-pointing: p = &y; *p = 7;

@@ -20,6 +20,7 @@
 
 #include <windows.h>
 #include <stdio.h>
+#include <assert.h>
 
 // Returns nonzero if protect flags include execute permission
 static int is_exec(DWORD prot) {
@@ -44,6 +45,8 @@ int main(void) {
     //   while return value > 0, advance addr += mbi.RegionSize
     //   accumulate totals
 
+    // Every process commits memory, so an unimplemented loop fails here.
+    assert(total_committed > 0);
     printf("Total committed : %zu bytes (%.1f MB)\n",
            total_committed, (double)total_committed / (1024*1024));
     printf("Executable regions: %d\n", exec_regions);

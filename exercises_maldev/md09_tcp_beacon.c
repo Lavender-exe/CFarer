@@ -1,4 +1,4 @@
-// CFarer - Maldev Exercise 09
+// CFarer - Malware Development Exercise 09
 // TOPIC: TCP Beacon - implant networking foundation
 // DIFFICULTY: Intermediate  PLATFORM: Windows
 // PURPOSE: Authorized malware research / red team education
@@ -47,7 +47,7 @@ int main(void) {
     hints.ai_socktype = SOCK_STREAM;
 
     // TODO 2: getaddrinfo(C2_HOST, C2_PORT, &hints, &res)
-    int rc = 0; // replace with getaddrinfo call
+    int rc = 1; // replace with the getaddrinfo call (placeholder forces the failure path)
     if (rc != 0) {
         fprintf(stderr, "getaddrinfo failed: %d\n", WSAGetLastError());
         WSACleanup();

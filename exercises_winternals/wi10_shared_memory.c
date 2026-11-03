@@ -25,6 +25,8 @@
 #define SHM_SIZE  256
 #define MAGIC     0xCAFEBABE
 
+static volatile LONG g_reader_ok = 0;   // set to 1 when reader got the message
+
 typedef struct {
     volatile LONG magic;
     char          message[240];
@@ -45,6 +47,7 @@ DWORD WINAPI reader_thread(LPVOID arg) {
     // TODO: MapViewOfFile -> const ShmBlock*
     // TODO: spin-wait for block->magic == MAGIC (use InterlockedCompareExchange or volatile read)
     // TODO: printf the message
+    // TODO: on success: InterlockedExchange(&g_reader_ok, 1)
     // TODO: UnmapViewOfFile + CloseHandle
     return 0;
 }
@@ -53,8 +56,11 @@ int main(void) {
     HANDLE wt = CreateThread(NULL, 0, writer_thread, NULL, 0, NULL);
     HANDLE rt = CreateThread(NULL, 0, reader_thread, NULL, 0, NULL);
     HANDLE th[2] = {wt, rt};
-    WaitForMultipleObjects(2, th, TRUE, 5000);
+    DWORD wr = WaitForMultipleObjects(2, th, TRUE, 5000);
     CloseHandle(wt); CloseHandle(rt);
+
+    assert(wr == WAIT_OBJECT_0);      // both threads finished in time
+    assert(g_reader_ok == 1);         // reader actually received the message
     printf("Shared memory IPC complete!\n");
     return 0;
 }

@@ -30,26 +30,24 @@ int main(void) {
     const char *path    = "mmap_test.txt";
     const char *payload = "Hello from file\n";
 
-    // Write the file
-    {
-        FILE *f = fopen(path, "w");
-        assert(f);
-        fputs(payload, f);
-        fclose(f);
-    }
+    // TODO 0: create the payload file yourself:
+    //   fopen(path, "w"), fputs(payload, f), fclose(f)
 
     // TODO 1: OpenFile for reading
-    HANDLE hfile = NULL;   // CreateFileA(path, GENERIC_READ, FILE_SHARE_READ,
-                           //   NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)
+    HANDLE hfile = INVALID_HANDLE_VALUE;   // CreateFileA(path, GENERIC_READ, FILE_SHARE_READ,
+                                           //   NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)
+    assert(hfile != INVALID_HANDLE_VALUE); // gate: fails until TODO 0 + 1 are done
 
     // TODO 2: CreateFileMapping(hfile, NULL, PAGE_READONLY, 0, 0, NULL)
     HANDLE hmap = NULL;
+    assert(hmap != NULL);
 
     // TODO 3: MapViewOfFile(hmap, FILE_MAP_READ, 0, 0, 0)
     const char *view = NULL;
 
-    // TODO 4: assert view starts with "Hello"
-    //         printf the mapped content
+    // gate: the mapped view must contain the payload
+    assert(view != NULL && strncmp(view, "Hello", 5) == 0);
+    printf("%s", view);
 
     // TODO 5: UnmapViewOfFile(view), CloseHandle(hmap), CloseHandle(hfile)
 

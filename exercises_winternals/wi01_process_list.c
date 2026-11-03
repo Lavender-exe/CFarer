@@ -21,6 +21,7 @@
 #include <windows.h>
 #include <tlhelp32.h>
 #include <stdio.h>
+#include <assert.h>
 
 int main(void) {
     HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
@@ -30,6 +31,7 @@ int main(void) {
     }
 
     PROCESSENTRY32 pe = { .dwSize = sizeof(pe) };
+    int listed = 0;
 
     printf("%-8s %-8s %-8s %s\n", "PID", "PPID", "Threads", "Name");
     printf("%-8s %-8s %-8s %s\n", "---", "----", "-------", "----");
@@ -37,7 +39,10 @@ int main(void) {
     // TODO: call Process32First, then loop with Process32Next
     //       printing pe.th32ProcessID, pe.th32ParentProcessID,
     //               pe.cntThreads, pe.szExeFile
+    //       and counting each process with listed++
 
+    assert(listed > 0);   // the snapshot must contain at least one process
+    printf("%d processes listed\n", listed);
     CloseHandle(snap);
     return 0;
 }

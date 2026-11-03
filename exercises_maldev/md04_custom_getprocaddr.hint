@@ -13,10 +13,9 @@ Loop over all named exports:
   }
   return NULL;
 
-=== HINT 3 ===
 Handle the case where export_rva == 0 (module has no exports): return NULL.
 
-=== HINT 4 (SPOILER) ===
+=== HINT 3 (SPOILER) ===
 void *my_get_proc_addr(HMODULE base, const char *func_name) {
     PIMAGE_DOS_HEADER dos = (PIMAGE_DOS_HEADER)base;
     PIMAGE_NT_HEADERS nt  = (PIMAGE_NT_HEADERS)((BYTE*)base + dos->e_lfanew);

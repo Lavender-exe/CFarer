@@ -14,12 +14,15 @@
 // OpenThread(access, FALSE, tid) gives you a HANDLE to inspect or manipulate.
 //
 // Task: Given a PID from argv[1], list all its threads.
-// For each, print: TID | BasePriority | StartAddress (via NtQueryInformationThread)
+// For each, print: TID | BasePriority | Owner PID
+// LOOKAHEAD: querying a thread's start address needs NtQueryInformationThread
+// (ntdll) - that API is introduced in wi08, so it is not used here yet.
 
 #include <windows.h>
 #include <tlhelp32.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
@@ -32,6 +35,7 @@ int main(int argc, char *argv[]) {
     if (snap == INVALID_HANDLE_VALUE) return 1;
 
     THREADENTRY32 te = { .dwSize = sizeof(te) };
+    int scanned = 0;
 
     printf("%-10s %-12s %s\n", "TID", "BasePriority", "Owner PID");
     printf("%-10s %-12s %s\n", "---", "------------", "---------");
@@ -39,7 +43,9 @@ int main(int argc, char *argv[]) {
     // TODO: Thread32First + Thread32Next loop
     //       Filter: te.th32OwnerProcessID == target_pid
     //       Print: te.th32ThreadID, te.tpBasePri, te.th32OwnerProcessID
+    //       and count every scanned entry with scanned++
 
+    assert(scanned > 0);   // the snapshot must contain at least one thread
     CloseHandle(snap);
     return 0;
 }

@@ -8,6 +8,10 @@
 // The technique: walk the export directory manually (as in md03)
 // and implement the same logic as GetProcAddress yourself.
 //
+// LOOKAHEAD: md05 jumps from PE parsing to live process injection
+// (OpenProcess / VirtualAllocEx / WriteProcessMemory / CreateRemoteThread).
+// Nothing is assumed - the md05 header explains every call.
+//
 // Task: Implement my_get_proc_addr(module_base, func_name).
 // It must return the same address as GetProcAddress for any named export.
 // Do NOT call GetProcAddress or any string-comparison API - use your own

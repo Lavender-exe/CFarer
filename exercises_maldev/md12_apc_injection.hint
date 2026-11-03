@@ -1,15 +1,15 @@
-=== HINT 1: Open handle to current thread ===
+=== HINT 1 ===
 HANDLE hThread = OpenThread(THREAD_SET_CONTEXT, FALSE, GetCurrentThreadId());
 
-=== HINT 2: Queue the APC ===
+=== HINT 2 ===
 DWORD queued = QueueUserAPC((PAPCFUNC)apc_callback, hThread, 0);
 // Returns non-zero on success
 
-=== HINT 3: Alertable wait to drain the queue ===
+
 DWORD r = SleepEx(100, TRUE);
 // WAIT_IO_COMPLETION (0xC0) means one or more APCs were delivered
 
-=== HINT 4: Assert flag ===
+=== HINT 3 (SPOILER) ===
 assert(g_apc_fired == 1);
 
 === KEY INSIGHT ===

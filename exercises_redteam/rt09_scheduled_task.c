@@ -30,9 +30,10 @@
 //
 // Compile: cl /nologo /std:c11 rt09_scheduled_task.c /link ole32.lib oleaut32.lib taskschd.lib
 
+#define COBJMACROS
+#define CINTERFACE
 #define _WIN32_DCOM
 #include <windows.h>
-#include <comdef.h>
 #include <taskschd.h>
 #include <stdio.h>
 #pragma comment(lib, "taskschd.lib")
@@ -53,35 +54,41 @@ int main(void) {
     hr = E_NOTIMPL;
     if (FAILED(hr)) { fprintf(stderr, "CoCreateInstance: 0x%lx\n",hr); goto done; }
 
-    // TODO 3: pSvc->Connect(variant_empty x4)
+    // TODO 3: ITaskService_Connect(pSvc, v, v, v, v)  (v = empty VARIANT)
     // VARIANT v; VariantInit(&v);
-    // hr = pSvc->Connect(v, v, v, v);
 
     ITaskDefinition *pTask = NULL;
-    // TODO 4: pSvc->NewTask(0, &pTask)
+    // TODO 4: ITaskService_NewTask(pSvc, 0, &pTask)
 
-    // TODO 5: add logon trigger via pTask->get_Triggers() -> CreateTrigger(TASK_TRIGGER_LOGON)
+    // TODO 5: logon trigger: ITaskDefinition_get_Triggers(pTask, &pTriggers)
+    //   -> ITriggerCollection_Create(pTriggers, TASK_TRIGGER_LOGON, &pTrig)
+    //   -> ITrigger_QueryInterface(pTrig, IID_ILogonTrigger, (void**)&pLogon)
 
-    // TODO 6: add exec action via pTask->get_Actions() -> Create(TASK_ACTION_EXEC)
+    // TODO 6: exec action: ITaskDefinition_get_Actions(pTask, &pActions)
+    //   -> IActionCollection_Create(pActions, TASK_ACTION_EXEC, &pAct)
+    //   -> IAction_QueryInterface(pAct, IID_IExecAction, (void**)&pExec)
     //   char exe[MAX_PATH]; GetModuleFileNameA(NULL,exe,MAX_PATH);
-    //   IExecAction::put_Path(SysAllocString(wchar_version_of_exe));
+    //   IExecAction_put_Path(pExec, SysAllocString(wchar_version_of_exe));
 
     ITaskFolder *pFolder = NULL;
-    // TODO 7: pSvc->GetFolder(L"\\", &pFolder)
-    //   pFolder->RegisterTaskDefinition(L"CFarerTest", pTask,
+    // TODO 7: ITaskService_GetFolder(pSvc, SysAllocString(L"\\"), &pFolder)
+    //   ITaskFolder_RegisterTaskDefinition(pFolder, SysAllocString(L"CFarerTest"), pTask,
     //     TASK_CREATE_OR_UPDATE, v, v, TASK_LOGON_INTERACTIVE_TOKEN, v, NULL);
     printf("Task created (implement TODOs)\n");
 
     // TODO 8: cleanup
-    //   pFolder->DeleteTask(L"CFarerTest", 0);
+    //   ITaskFolder_DeleteTask(pFolder, SysAllocString(L"CFarerTest"), 0);
     printf("Task deleted\n");
 
 done:
-    if (pTask)   pTask->Release();
-    if (pFolder) pFolder->Release();
-    if (pSvc)    pSvc->Release();
+    if (pTask)   ITaskDefinition_Release(pTask);
+    if (pFolder) ITaskFolder_Release(pFolder);
+    if (pSvc)    ITaskService_Release(pSvc);
     CoUninitialize();
     return 0;
 }
+
+// LOOKAHEAD: rt10 introduces the CNG crypto API (bcrypt.h) - a new topic.
+// Its hints 1-3 give the full open/hash/finish call sequence.
 
 // I AM NOT DONE
